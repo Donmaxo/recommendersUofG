@@ -113,7 +113,8 @@ class NRMSModel(BaseModel):
             [click_title_presents] * 3
         )
         user_present = AttLayer2(hparams.attention_hidden_dim, seed=self.seed)(y)
-
+        
+        print("userenc", his_input_title.shape, "CTP:", click_title_presents.shape, user_present.shape)
         model = keras.Model(his_input_title, user_present, name="user_encoder")
         return model
 
@@ -135,6 +136,7 @@ class NRMSModel(BaseModel):
         y = SelfAttention(hparams.head_num, hparams.head_dim, seed=self.seed)([y, y, y])
         y = layers.Dropout(hparams.dropout)(y)
         pred_title = AttLayer2(hparams.attention_hidden_dim, seed=self.seed)(y)
+        print("newsenc:", sequences_input_title.shape, y.shape, pred_title.shape)
 
         model = keras.Model(sequences_input_title, pred_title, name="news_encoder")
         return model
@@ -181,6 +183,7 @@ class NRMSModel(BaseModel):
         news_present = layers.TimeDistributed(self.newsencoder)(pred_input_title)
         news_present_one = self.newsencoder(pred_title_one_reshape)
 
+        print(f"NRMS:\n\tuser_present: {user_present.shape}\n\tnews_present: {news_present.shape}")
         preds = layers.Dot(axes=-1)([news_present, user_present])
         preds = layers.Activation(activation="softmax")(preds)
 

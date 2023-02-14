@@ -27,10 +27,10 @@ class BaseModel:
     """
 
     def __init__(
-        self,
-        hparams,
-        iterator_creator,
-        seed=None,
+            self,
+            hparams,
+            iterator_creator,
+            seed=None,
     ):
         """Initializing the model. Create common logics which are needed by all deeprec models, such as loss function,
         parameter set.
@@ -179,13 +179,13 @@ class BaseModel:
         return pred_rslt, eval_label, imp_index
 
     def fit(
-        self,
-        train_news_file,
-        train_behaviors_file,
-        valid_news_file,
-        valid_behaviors_file,
-        test_news_file=None,
-        test_behaviors_file=None,
+            self,
+            train_news_file,
+            train_behaviors_file,
+            valid_news_file,
+            valid_behaviors_file,
+            test_news_file=None,
+            test_behaviors_file=None,
     ):
         """Fit the model with train_file. Evaluate the model on valid_file per epoch to observe the training status.
         If test_news_file is not None, evaluate it too.
@@ -325,15 +325,19 @@ class BaseModel:
         """
 
         if self.support_quick_scoring:
-            _, group_labels, group_preds = self.run_fast_eval(
+            _, group_labels, group_preds, group_preds_reldiff = self.run_fast_eval(
                 news_filename, behaviors_file
             )
         else:
             _, group_labels, group_preds = self.run_slow_eval(
                 news_filename, behaviors_file
             )
+            group_preds_reldiff = group_preds  # error catch run_slow_eval not implemented for RelDiff
         res = cal_metric(group_labels, group_preds, self.hparams.metrics)
-        return res
+        # Added to print the metrics, the RelDiff ones are returned
+        res_reldiff = cal_metric(group_labels, group_preds_reldiff, self.hparams.metrics)
+        print("pred       ", res, "\npred_reldiff", res_reldiff)
+        return res_reldiff
 
     def user(self, batch_user_input):
         user_input = self._get_user_feature_from_iter(batch_user_input)
@@ -342,12 +346,56 @@ class BaseModel:
 
         return user_index, user_vec
 
+    def user_reldiff(self, batch_user_input):
+        user_input = self._get_user_feature_from_iter(batch_user_input)
+        user_vec = self.userencoder.predict_on_batch(user_input)
+        user_index = batch_user_input["impr_index_batch"]
+
+        # Get the user click history as array of news embeddings
+        user_n_news_vec = {}
+        for i, uc in enumerate(user_index):
+            # Sanitise input by removing zero arrays (as users have not necessarily interacted with 50 news)
+            a = user_input[i]
+            a = a[~np.all(a == 0, axis=1)]  # remove zero arrays
+            # Compatibility - add one zero vector back - the 'new user gets average news recommended solution'
+            if a.size == 0:
+                a = np.array([np.zeros(user_input[i].shape[1])])
+
+            # TODO make the max number of news_history (10) be able to change easily
+            # Get the number of documents from user click history to return back, set limit to the number of amount of
+            #  clicked in the user history (whichever is lower)
+            n = min(10, a.shape[0])
+            # Create the dictionary required for self.news() and run it
+            batch_user_news_input = {"news_index_batch": np.arange(0, n, 1),
+                                     "candidate_title_batch": a}
+            user_n_news_vec[uc] = self.news(batch_user_news_input)[1]
+
+        return user_index, user_vec, user_n_news_vec
+
     def news(self, batch_news_input):
         news_input = self._get_news_feature_from_iter(batch_news_input)
         news_vec = self.newsencoder.predict_on_batch(news_input)
         news_index = batch_news_input["news_index_batch"]
 
         return news_index, news_vec
+
+    # Modified method run_user that also returns the user_history used for the RelDiff calculation
+    def run_user_reldiff(self, news_filename, behaviors_file):
+        if not hasattr(self, "userencoder"):
+            raise ValueError("model must have attribute userencoder")
+
+        user_indexes = []
+        user_vecs = []
+        user_n_news_vecs_all = {}
+        for batch_data_input in tqdm(
+                self.test_iterator.load_user_from_file(news_filename, behaviors_file)
+        ):
+            user_index, user_vec, user_n_news_vecs = self.user_reldiff(batch_data_input)
+            user_indexes.extend(np.reshape(user_index, -1))
+            user_vecs.extend(user_vec)
+            # Include the user news click history
+            user_n_news_vecs_all.update(user_n_news_vecs)
+        return dict(zip(user_indexes, user_vecs)), user_n_news_vecs_all
 
     def run_user(self, news_filename, behaviors_file):
         if not hasattr(self, "userencoder"):
@@ -356,7 +404,7 @@ class BaseModel:
         user_indexes = []
         user_vecs = []
         for batch_data_input in tqdm(
-            self.test_iterator.load_user_from_file(news_filename, behaviors_file)
+                self.test_iterator.load_user_from_file(news_filename, behaviors_file)
         ):
             user_index, user_vec = self.user(batch_data_input)
             user_indexes.extend(np.reshape(user_index, -1))
@@ -371,7 +419,7 @@ class BaseModel:
         news_indexes = []
         news_vecs = []
         for batch_data_input in tqdm(
-            self.test_iterator.load_news_from_file(news_filename)
+                self.test_iterator.load_news_from_file(news_filename)
         ):
             news_index, news_vec = self.news(batch_data_input)
             news_indexes.extend(np.reshape(news_index, -1))
@@ -385,7 +433,7 @@ class BaseModel:
         imp_indexes = []
 
         for batch_data_input in tqdm(
-            self.test_iterator.load_data_from_file(news_filename, behaviors_file)
+                self.test_iterator.load_data_from_file(news_filename, behaviors_file)
         ):
             step_pred, step_labels, step_imp_index = self.eval(batch_data_input)
             preds.extend(np.reshape(step_pred, -1))
@@ -399,7 +447,9 @@ class BaseModel:
 
     def run_fast_eval(self, news_filename, behaviors_file):
         news_vecs = self.run_news(news_filename)
-        user_vecs = self.run_user(news_filename, behaviors_file)
+        # Run the extended method that also saves embeddings of the user history
+        # user_vecs = self.run_user(news_filename, behaviors_file)
+        user_vecs, other_vecs_reldiff = self.run_user_reldiff(news_filename, behaviors_file)
 
         self.news_vecs = news_vecs
         self.user_vecs = user_vecs
@@ -407,19 +457,50 @@ class BaseModel:
         group_impr_indexes = []
         group_labels = []
         group_preds = []
+        group_preds_reldiff = []
 
         for (
-            impr_index,
-            news_index,
-            user_index,
-            label,
+                impr_index,
+                news_index,
+                user_index,
+                label,
         ) in tqdm(self.test_iterator.load_impression_from_file(behaviors_file)):
+            # The original calculation for comparison
             pred = np.dot(
                 np.stack([news_vecs[i] for i in news_index], axis=0),
                 user_vecs[impr_index],
             )
+
+            # A helper function to calculate the RelDiff for user embedding, user_history, and candidate news returning
+            #  back a np.array of length len(candidate_news) that is the RelDiffs of:
+            #  user_history <-> user <-> candidate_news
+            def reldiff(user, user_history, candidate_news):
+                user = np.mean([user - np.multiply(news, user_history) for news in candidate_news], axis=1)
+                # print(user.shape)
+                return user  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
+
+            # Perform the Norm2 normalisation on the stack, user_history, and the user embeddings, avoid division by 0
+            normalised_stack = np.stack([news_vecs[i] /
+                                         (1 if np.linalg.norm(news_vecs[i], 2) == 0 else np.linalg.norm(news_vecs[i], 2))
+                                         for i in news_index], axis=0)
+            # print([vec / np.linalg.norm(vec, 2) for vec in other_vecs_reldiff[impr_index]])
+            normalised_hist = np.stack([vec /
+                                        (1 if np.linalg.norm(vec, 2) == 0 else np.linalg.norm(vec, 2))
+                                        for vec in other_vecs_reldiff[impr_index]])
+            normalised_user = (user_vecs[impr_index] /
+                               (1 if np.linalg.norm(user_vecs[impr_index], 2) == 0
+                               else np.linalg.norm(user_vecs[impr_index], 2)))
+
+            # Call the reldiff helper function to obtain the "stack" after the RelDiff has been applied
+            user_vecs_reldiff = reldiff(normalised_user,
+                                        normalised_hist,
+                                        normalised_stack)
+            # Calculate a dot product between the RelDiff embeddings and the normalised candidate_news==stack
+            pred_reldiff = [np.dot(news, user) for news, user in zip(normalised_stack, user_vecs_reldiff)]
+
             group_impr_indexes.append(impr_index)
             group_labels.append(label)
             group_preds.append(pred)
-
-        return group_impr_indexes, group_labels, group_preds
+            # Modify to append and return the original predictions and also the RelDiff ones
+            group_preds_reldiff.append(pred_reldiff)
+        return group_impr_indexes, group_labels, group_preds, group_preds_reldiff
