@@ -356,27 +356,26 @@ class BaseModel:
         print(5 + "i")
 
         # Get the user click history as array of news embeddings
-        user_n_news_vec = {}
-        for i, uc in enumerate(user_index):
-            # Sanitise input by removing zero arrays (as users have not necessarily interacted with 50 news)
-            a = user_input[i]
-            a = a[~np.all(a == 0, axis=1)]  # remove zero arrays
-            # Compatibility - add one zero vector back - the 'new user gets average news recommended solution'
-            if a.size == 0:
-                a = np.array([np.zeros(user_input[i].shape[1])])
+#         user_n_news_vec = {}
+#         for i, uc in enumerate(user_index):
+#             # Sanitise input by removing zero arrays (as users have not necessarily interacted with 50 news)
+#             a = user_input[i]
+#             a = a[~np.all(a == 0, axis=1)]  # remove zero arrays
+#             # Compatibility - add one zero vector back - the 'new user gets average news recommended solution'
+#             if a.size == 0:
+#                 a = np.array([np.zeros(user_input[i].shape[1])])
 
-            # TODO make the max number of news_history (n) be able to change easily
-            # Get the number of documents from user click history to return back, set limit to the number of amount of
-            #  clicked in the user history (whichever is lower)
-            n = min(24, a.shape[0])
-            # Create the dictionary required for self.news() and run it
-#             batch_user_news_input = {"news_index_batch": np.arange(0, n, 1),
-#                                      "candidate_title_batch": a}
-#             user_n_news_vec[uc] = self.news(batch_user_news_input)[1]
-            # user_n_news_vec[uc] = np.float32(self.newsencoder.predict_on_batch(a[:n, :]))
-            user_n_news_vec[uc] 
-
-        return user_index, user_vec, user_n_news_vec
+#             # TODO make the max number of news_history (n) be able to change easily
+#             # Get the number of documents from user click history to return back, set limit to the number of amount of
+#             #  clicked in the user history (whichever is lower)
+#             n = min(24, a.shape[0])
+#             # Create the dictionary required for self.news() and run it
+# #             batch_user_news_input = {"news_index_batch": np.arange(0, n, 1),
+# #                                      "candidate_title_batch": a}
+# #             user_n_news_vec[uc] = self.news(batch_user_news_input)[1]
+#             # user_n_news_vec[uc] = np.float32(self.newsencoder.predict_on_batch(a[:n, :]))
+#             user_n_news_vec[uc] = user_input
+        return user_index, user_vec, user_input
 
     def news(self, batch_news_input):
         news_input = self._get_news_feature_from_iter(batch_news_input)
@@ -397,7 +396,7 @@ class BaseModel:
                 self.test_iterator.load_user_from_file(news_filename, behaviors_file),
                 desc="load_user_from_file"
         ):
-            user_index, user_vec, user_n_news_vecs = self.user_reldiff(batch_data_input)
+            user_index, user_vec, user_input = self.user_reldiff(batch_data_input)
             user_indexes.extend(np.reshape(user_index, -1))
             user_vecs.extend(user_vec)
             # Include the user news click history
@@ -406,7 +405,7 @@ class BaseModel:
         print('user_indexes length:        ', len(user_indexes))
         print('user_vecs length:           ', len(user_vecs))
         print('user_n_news_vecs_all length:', len(user_n_news_vecs_all))
-        return dict(zip(user_indexes, user_vecs)), user_n_news_vecs_all
+        return dict(zip(user_indexes, user_vecs)), dict(zip(user_indexes, user_n_news_vecs_all))
 
     def run_user(self, news_filename, behaviors_file):
         if not hasattr(self, "userencoder"):
@@ -473,7 +472,7 @@ class BaseModel:
         news_vecs = self.run_news(news_filename)
         # Run the extended method that also saves embeddings of the user history
         # user_vecs = self.run_user(news_filename, behaviors_file)
-        user_vecs, other_vecs_reldiff = self.run_user_reldiff(news_filename, behaviors_file)
+        user_vecs, user_clicked_news = self.run_user_reldiff(news_filename, behaviors_file)
 
         self.news_vecs = news_vecs
         self.user_vecs = user_vecs
@@ -496,10 +495,18 @@ class BaseModel:
                 user_vecs[impr_index],
             )
 
+            # TODO get vectors from this
+            user_history = user_clicked_news[user_index]
+            user_history = user_history[np.nonzero(user_history)]
+            n = min(10, len(user_history))
+            user_history = user_history[:n]
+            if len(user_history) == 0: user_history = [0]
+            user_history = np.stack([news_vecs[i] for i in user_history])
+
 
             # Call the reldiff helper function to obtain the "stack" after the RelDiff has been applied
             user_vecs_reldiff = reldiff(user_vecs[impr_index],
-                                        other_vecs_reldiff[impr_index],
+                                        user_history,
                                         news_stack)
             # Calculate a dot product between the RelDiff embeddings and the normalised candidate_news==stack
             pred_reldiff = [np.dot(news, user) for news, user in zip(news_stack, user_vecs_reldiff)]
