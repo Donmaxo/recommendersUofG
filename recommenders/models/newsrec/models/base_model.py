@@ -361,14 +361,15 @@ class BaseModel:
             if a.size == 0:
                 a = np.array([np.zeros(user_input[i].shape[1])])
 
-            # TODO make the max number of news_history (10) be able to change easily
+            # TODO make the max number of news_history (n) be able to change easily
             # Get the number of documents from user click history to return back, set limit to the number of amount of
             #  clicked in the user history (whichever is lower)
-            n = min(10, a.shape[0])
+            n = min(24, a.shape[0])
             # Create the dictionary required for self.news() and run it
-            batch_user_news_input = {"news_index_batch": np.arange(0, n, 1),
-                                     "candidate_title_batch": a}
-            user_n_news_vec[uc] = self.news(batch_user_news_input)[1]
+#             batch_user_news_input = {"news_index_batch": np.arange(0, n, 1),
+#                                      "candidate_title_batch": a}
+#             user_n_news_vec[uc] = self.news(batch_user_news_input)[1]
+            user_n_news_vec[uc] = np.float32(self.newsencoder.predict_on_batch(a[:n, :]))
 
         return user_index, user_vec, user_n_news_vec
 
@@ -388,13 +389,18 @@ class BaseModel:
         user_vecs = []
         user_n_news_vecs_all = {}
         for batch_data_input in tqdm(
-                self.test_iterator.load_user_from_file(news_filename, behaviors_file)
+                self.test_iterator.load_user_from_file(news_filename, behaviors_file),
+                desc="load_user_from_file"
         ):
             user_index, user_vec, user_n_news_vecs = self.user_reldiff(batch_data_input)
             user_indexes.extend(np.reshape(user_index, -1))
             user_vecs.extend(user_vec)
             # Include the user news click history
             user_n_news_vecs_all.update(user_n_news_vecs)
+#             print(user_n_news_vecs_all)
+        print('user_indexes length:        ', len(user_indexes))
+        print('user_vecs length:           ', len(user_vecs))
+        print('user_n_news_vecs_all length:', len(user_n_news_vecs_all))
         return dict(zip(user_indexes, user_vecs)), user_n_news_vecs_all
 
     def run_user(self, news_filename, behaviors_file):
@@ -419,7 +425,8 @@ class BaseModel:
         news_indexes = []
         news_vecs = []
         for batch_data_input in tqdm(
-                self.test_iterator.load_news_from_file(news_filename)
+                self.test_iterator.load_news_from_file(news_filename),
+                desc="load_news_from_file"
         ):
             news_index, news_vec = self.news(batch_data_input)
             news_indexes.extend(np.reshape(news_index, -1))
@@ -444,8 +451,20 @@ class BaseModel:
             labels, preds, imp_indexes
         )
         return group_impr_indexes, group_labels, group_preds
-
-    def run_fast_eval(self, news_filename, behaviors_file):
+            
+    def reldiff(user, user_history, candidate_news):
+        # TODO add normalisation for the multiply step
+        rd = []
+        for n in candidate_news:
+            cn = n * user_history 
+            l2 = np.linalg.norm(cn)
+            if l2 == 0: l2 = 1
+            rd.append(user - (cn / l2))
+        return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
+    
+    def run_fast_eval(self, news_filename, behaviors_file, update=False):
+        if update:
+            self.test_iterator.update_datasets(news_filename, behaviors_file)
         news_vecs = self.run_news(news_filename)
         # Run the extended method that also saves embeddings of the user history
         # user_vecs = self.run_user(news_filename, behaviors_file)
@@ -464,39 +483,21 @@ class BaseModel:
                 news_index,
                 user_index,
                 label,
-        ) in tqdm(self.test_iterator.load_impression_from_file(behaviors_file)):
-            # The original calculation for comparison
+        ) in tqdm(self.test_iterator.load_impression_from_file(behaviors_file), desc="load_impression_from_file"):
+            news_stack = np.stack([news_vecs[i] for i in news_index], axis=0)
+
             pred = np.dot(
-                np.stack([news_vecs[i] for i in news_index], axis=0),
+                news_stack,
                 user_vecs[impr_index],
             )
 
-            # A helper function to calculate the RelDiff for user embedding, user_history, and candidate news returning
-            #  back a np.array of length len(candidate_news) that is the RelDiffs of:
-            #  user_history <-> user <-> candidate_news
-            def reldiff(user, user_history, candidate_news):
-                user = np.mean([user - np.multiply(news, user_history) for news in candidate_news], axis=1)
-                # print(user.shape)
-                return user  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
-
-            # Perform the Norm2 normalisation on the stack, user_history, and the user embeddings, avoid division by 0
-            normalised_stack = np.stack([news_vecs[i] /
-                                         (1 if np.linalg.norm(news_vecs[i], 2) == 0 else np.linalg.norm(news_vecs[i], 2))
-                                         for i in news_index], axis=0)
-            # print([vec / np.linalg.norm(vec, 2) for vec in other_vecs_reldiff[impr_index]])
-            normalised_hist = np.stack([vec /
-                                        (1 if np.linalg.norm(vec, 2) == 0 else np.linalg.norm(vec, 2))
-                                        for vec in other_vecs_reldiff[impr_index]])
-            normalised_user = (user_vecs[impr_index] /
-                               (1 if np.linalg.norm(user_vecs[impr_index], 2) == 0
-                               else np.linalg.norm(user_vecs[impr_index], 2)))
 
             # Call the reldiff helper function to obtain the "stack" after the RelDiff has been applied
-            user_vecs_reldiff = reldiff(normalised_user,
-                                        normalised_hist,
-                                        normalised_stack)
+            user_vecs_reldiff = reldiff(user_vecs[impr_index],
+                                        other_vecs_reldiff[impr_index],
+                                        news_stack)
             # Calculate a dot product between the RelDiff embeddings and the normalised candidate_news==stack
-            pred_reldiff = [np.dot(news, user) for news, user in zip(normalised_stack, user_vecs_reldiff)]
+            pred_reldiff = [np.dot(news, user) for news, user in zip(news_stack, user_vecs_reldiff)]
 
             group_impr_indexes.append(impr_index)
             group_labels.append(label)

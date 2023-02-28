@@ -34,7 +34,7 @@ class MINDIterator(BaseIterator):
         hparams,
         npratio=-1,
         col_spliter="\t",
-        ID_spliter="%",
+        ID_spliter="%"
     ):
         """Initialize an iterator. Create necessary placeholders for the model.
 
@@ -114,6 +114,8 @@ class MINDIterator(BaseIterator):
 
         with tf.io.gfile.GFile(behaviors_file, "r") as rd:
             impr_index = 0
+            print("init_behaviors now")
+#             print(behaviors_file)
             for line in rd:
                 uid, time, history, impr = line.strip("\n").split(self.col_spliter)[-4:]
 
@@ -123,7 +125,7 @@ class MINDIterator(BaseIterator):
                 ]
 
                 impr_news = [self.nid2index[i.split("-")[0]] for i in impr.split()]
-                label = [int(i.split("-")[1]) for i in impr.split()]
+                label = [int(i.split("-")[1]) if "-" in i else 0 for i in impr.split()]
                 uindex = self.uid2index[uid] if uid in self.uid2index else 0
 
                 self.histories.append(history)
@@ -216,6 +218,7 @@ class MINDIterator(BaseIterator):
 
         if not hasattr(self, "impr_indexes"):
             self.init_behaviors(behavior_file)
+            
 
         label_list = []
         imp_indexes = []
@@ -320,6 +323,7 @@ class MINDIterator(BaseIterator):
 
         if not hasattr(self, "impr_indexes"):
             self.init_behaviors(behavior_file)
+        
 
         user_indexes = []
         impr_indexes = []
@@ -462,3 +466,7 @@ class MINDIterator(BaseIterator):
                 self.uindexes[index],
                 impr_label,
             )
+            
+    def update_datasets(self, news_file, behaviors_file):       
+        self.init_news(news_file)
+        self.init_behaviors(behaviors_file) 
