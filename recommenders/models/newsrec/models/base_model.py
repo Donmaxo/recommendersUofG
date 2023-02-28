@@ -456,11 +456,19 @@ class BaseModel:
         )
         return group_impr_indexes, group_labels, group_preds
             
+    def pr_matrix(self, m):
+        # maybe np.dot instead of @ ???
+        U, S, V = np.linalg.svd(m)
+        A = U @ U.T
+        Pr = A @ np.linalg.inv(A.T @ A) @ A.T
+        return Pr
+
     def reldiff(self, user, user_history, candidate_news):
-        # TODO add normalisation for the multiply step
+        # TODO test Projection matrix
         rd = []
         for n in candidate_news:
             cn = n * user_history 
+            cn = self.pr_matrix(cn)  # Project to another space
             l2 = np.linalg.norm(cn)
             if l2 == 0: l2 = 1
             rd.append(user - (cn / l2))
@@ -490,17 +498,17 @@ class BaseModel:
         ) in tqdm(self.test_iterator.load_impression_from_file(behaviors_file), desc="load_impression_from_file"):
             news_stack = np.stack([news_vecs[i] for i in news_index], axis=0)
 
-            pred = np.dot(
-                news_stack,
-                user_vecs[impr_index],
-            )
+            # pred = np.dot(
+            #     news_stack,
+            #     user_vecs[impr_index],
+            # )
 
             # TODO get vectors from this
             user_history = user_clicked_news[user_index]
             user_history = user_history[np.nonzero(user_history)]
-            n = min(24, len(user_history))
+            n = min(10, len(user_history))
             # user_history = user_history[:n]
-            user_history = user_history[::-1][:n]
+            user_history = user_history[:n]
             if len(user_history) == 0: user_history = [0]
             user_history = np.stack([news_vecs[i] for i in user_history])
 
@@ -513,7 +521,8 @@ class BaseModel:
 
             group_impr_indexes.append(impr_index)
             group_labels.append(label)
-            group_preds.append(pred)
+            # group_preds.append(pred)
             # Modify to append and return the original predictions and also the RelDiff ones
             group_preds_reldiff.append(pred_reldiff)
+        group_preds = group_preds_reldiff
         return group_impr_indexes, group_labels, group_preds, group_preds_reldiff
