@@ -456,7 +456,7 @@ class BaseModel:
         )
         return group_impr_indexes, group_labels, group_preds
             
-    def reldiff(user, user_history, candidate_news):
+    def reldiff(self, user, user_history, candidate_news):
         # TODO add normalisation for the multiply step
         rd = []
         for n in candidate_news:
