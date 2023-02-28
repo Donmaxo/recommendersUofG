@@ -459,8 +459,8 @@ class BaseModel:
     def pr_matrix(self, m):
         # maybe np.dot instead of @ ???
         U, S, V = np.linalg.svd(m)
-        A = U @ U.T
-        Pr = A @ np.linalg.inv(A.T @ A) @ A.T
+        A = np.dot(U, U.T)
+        Pr = np.dot(A, np.dot(np.linalg.inv(np.dot(A.T, A)), A.T))
         return Pr
 
     def reldiff(self, user, user_history, candidate_news):
