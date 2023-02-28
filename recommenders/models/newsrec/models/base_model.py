@@ -457,10 +457,12 @@ class BaseModel:
         return group_impr_indexes, group_labels, group_preds
             
     def pr_matrix(self, m):
+        print(m.shape)
         # maybe np.dot instead of @ ???
         U, S, V = np.linalg.svd(m)
         A = np.dot(U, U.T)
         Pr = np.dot(A, np.dot(np.linalg.inv(np.dot(A.T, A)), A.T))
+        print(U.shape, S.shape, V.shape, A.shape)
         return Pr
 
     def reldiff(self, user, user_history, candidate_news):
