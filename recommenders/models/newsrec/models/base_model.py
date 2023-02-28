@@ -351,6 +351,10 @@ class BaseModel:
         user_vec = self.userencoder.predict_on_batch(user_input)
         user_index = batch_user_input["impr_index_batch"]
 
+        print(user_input.shape, user_vec.shape, user_index.shape)
+        print(user_input)
+        print(5 + "i")
+
         # Get the user click history as array of news embeddings
         user_n_news_vec = {}
         for i, uc in enumerate(user_index):
@@ -369,7 +373,8 @@ class BaseModel:
 #             batch_user_news_input = {"news_index_batch": np.arange(0, n, 1),
 #                                      "candidate_title_batch": a}
 #             user_n_news_vec[uc] = self.news(batch_user_news_input)[1]
-            user_n_news_vec[uc] = np.float32(self.newsencoder.predict_on_batch(a[:n, :]))
+            # user_n_news_vec[uc] = np.float32(self.newsencoder.predict_on_batch(a[:n, :]))
+            user_n_news_vec[uc] 
 
         return user_index, user_vec, user_n_news_vec
 
