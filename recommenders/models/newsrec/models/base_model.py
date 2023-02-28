@@ -351,9 +351,9 @@ class BaseModel:
         user_vec = self.userencoder.predict_on_batch(user_input)
         user_index = batch_user_input["impr_index_batch"]
 
-        print(user_input.shape, user_vec.shape, user_index.shape)
-        print(user_input)
-        print(5 + "i")
+        # print(user_input.shape, user_vec.shape, user_index.shape)
+        # print(user_input)
+        # print(5 + "i")
 
         # Get the user click history as array of news embeddings
 #         user_n_news_vec = {}
@@ -391,7 +391,7 @@ class BaseModel:
 
         user_indexes = []
         user_vecs = []
-        user_n_news_vecs_all = {}
+        user_histories = []
         for batch_data_input in tqdm(
                 self.test_iterator.load_user_from_file(news_filename, behaviors_file),
                 desc="load_user_from_file"
@@ -400,12 +400,12 @@ class BaseModel:
             user_indexes.extend(np.reshape(user_index, -1))
             user_vecs.extend(user_vec)
             # Include the user news click history
-            user_n_news_vecs_all.update(user_n_news_vecs)
+            user_histories.extend(user_input)
 #             print(user_n_news_vecs_all)
         print('user_indexes length:        ', len(user_indexes))
         print('user_vecs length:           ', len(user_vecs))
-        print('user_n_news_vecs_all length:', len(user_n_news_vecs_all))
-        return dict(zip(user_indexes, user_vecs)), dict(zip(user_indexes, user_n_news_vecs_all))
+        print('user_n_news_vecs_all length:', len(user_histories))
+        return dict(zip(user_indexes, user_vecs)), dict(zip(user_indexes, user_histories))
 
     def run_user(self, news_filename, behaviors_file):
         if not hasattr(self, "userencoder"):
