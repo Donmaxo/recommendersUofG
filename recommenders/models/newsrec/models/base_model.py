@@ -473,7 +473,7 @@ class BaseModel:
         for n in candidate_news:
             cn = n * user_history 
             # cn = self.pr_matrix(cn)  # Project to another spaces
-            l2 = np.linalg.norm(cn)
+            l2 = np.linalg.norm(cn, axis=1)
             if l2 == 0: l2 = 1
             rd.append(user - (cn / l2))
         return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
@@ -510,7 +510,7 @@ class BaseModel:
             # TODO get vectors from this
             user_history = user_clicked_news[user_index]
             user_history = user_history[np.nonzero(user_history)]
-            n = min(5, len(user_history))
+            n = min(10, len(user_history))
             user_history = user_history[:n]
             if len(user_history) == 0: user_history = [0]
             user_history = np.stack([news_vecs[i] for i in user_history])
