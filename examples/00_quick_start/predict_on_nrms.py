@@ -105,7 +105,7 @@ with open(os.path.join(data_path, 'prediction_reldiff.txt'), 'w') as f:
         pred_rank = '[' + ','.join([str(i) for i in pred_rank]) + ']'
         f.write(' '.join([str(impr_index), pred_rank])+ '\n')
 
-f = zipfile.ZipFile(os.path.join(data_path, 'prediction_reldiff-nrms-fit-v2-15.zip'), 'w', zipfile.ZIP_DEFLATED)
+f = zipfile.ZipFile(os.path.join(data_path, 'prediction_reldiff-nrms-fit-v2-5.zip'), 'w', zipfile.ZIP_DEFLATED)
 f.write(os.path.join(data_path, 'prediction_reldiff.txt'), arcname='prediction.txt')
 f.close()
 
