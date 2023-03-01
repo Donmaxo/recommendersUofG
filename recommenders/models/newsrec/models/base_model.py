@@ -456,16 +456,16 @@ class BaseModel:
         )
         return group_impr_indexes, group_labels, group_preds
             
-    def pr_matrix(self, m):
+    def pr_matrix(self, m): # m = user_vec to numpy array (all of them) (50, 400)
         # print(m.shape)
         # (10, 400)
         # maybe np.dot instead of @ ???
         U, S, V = np.linalg.svd(m)
         A = np.dot(U, U.T)
-        Pr = np.dot(A, np.dot(np.linalg.inv(np.dot(A.T, A)), A.T))
+        Pr = A @ np.linalg.inv(A.T @ A) @ A.T
         print(U.shape, S.shape, V.shape, A.shape)
         # (10, 10) (10,) (400, 400) (10, 10)
-        return Pr # (10, 10) - expected (10, 400) or (400, 10)
+        return Pr # (10, 10) - expected (10, 400) or (400, 10) (400, 400) --> dot product with cn
 
     def reldiff(self, user, user_history, candidate_news):
         # TODO test Projection matrix
@@ -510,7 +510,7 @@ class BaseModel:
             # TODO get vectors from this
             user_history = user_clicked_news[user_index]
             user_history = user_history[np.nonzero(user_history)]
-            n = min(10, len(user_history))
+            n = min(15, len(user_history))
             user_history = user_history[:n]
             if len(user_history) == 0: user_history = [0]
             user_history = np.stack([news_vecs[i] for i in user_history])
