@@ -474,7 +474,7 @@ class BaseModel:
             cn = n * user_history 
             # cn = self.pr_matrix(cn)  # Project to another spaces
             l2 = np.linalg.norm(cn, axis=1)
-            l2 = np.stack([norm if norm != 0 else 1 for norm in l2])
+            l2 = np.where(l2 == 0, 1, l2)
             rd.append(user - (cn.T / l2).T)
         return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
     
