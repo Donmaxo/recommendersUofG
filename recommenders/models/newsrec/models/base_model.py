@@ -510,7 +510,7 @@ class BaseModel:
             # TODO get vectors from this
             user_history = user_clicked_news[user_index]
             user_history = user_history[np.nonzero(user_history)]
-            n = min(15, len(user_history))
+            n = min(24, len(user_history))
             user_history = user_history[:n]
             if len(user_history) == 0: user_history = [0]
             user_history = np.stack([news_vecs[i] for i in user_history])
