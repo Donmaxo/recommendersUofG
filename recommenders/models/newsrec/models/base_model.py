@@ -476,7 +476,7 @@ class BaseModel:
             # cn = self.pr_matrix(cn)  # Project to another spaces
             l2 = np.linalg.norm(cn, axis=1)
             l2 = np.where(l2 == 0, 1, l2)
-            rd.append(user - (self.prm @ (cn.T / l2).T))
+            rd.append(user - (self.prm @ (cn.T / l2)).T)
         return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
     
     def run_fast_eval(self, news_filename, behaviors_file, update=False):
