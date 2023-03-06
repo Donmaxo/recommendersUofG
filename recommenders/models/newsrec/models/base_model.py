@@ -457,11 +457,12 @@ class BaseModel:
         return group_impr_indexes, group_labels, group_preds
             
     def pr_matrix(self, m): # m = user_vec to numpy array (all of them) (50, 400)
+        from scipy.linalg import orth
         # print(m.shape)
         # (10, 400)
         # maybe np.dot instead of @ ???
-        U, S, V = np.linalg.svd(m)
-        A = np.dot(U, U.T)
+        A = orth(m.T)
+        # A = np.dot(U, U.T)
         Pr = A @ np.linalg.inv(A.T @ A) @ A.T
         print(U.shape, S.shape, V.shape, A.shape)
         # (10, 10) (10,) (400, 400) (10, 10)
@@ -475,7 +476,7 @@ class BaseModel:
             # cn = self.pr_matrix(cn)  # Project to another spaces
             l2 = np.linalg.norm(cn, axis=1)
             l2 = np.where(l2 == 0, 1, l2)
-            rd.append(user - (cn.T / l2).T)
+            rd.append(user - (self.prm @ (cn.T / l2).T))
         return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
     
     def run_fast_eval(self, news_filename, behaviors_file, update=False):
@@ -485,6 +486,8 @@ class BaseModel:
         # Run the extended method that also saves embeddings of the user history
         # user_vecs = self.run_user(news_filename, behaviors_file)
         user_vecs, user_clicked_news = self.run_user_reldiff(news_filename, behaviors_file)
+
+        self.prm = self.pr_matrix(np.stack(list(user_vecs.values())))
 
         self.news_vecs = news_vecs
         self.user_vecs = user_vecs
