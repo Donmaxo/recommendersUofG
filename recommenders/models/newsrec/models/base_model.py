@@ -464,7 +464,7 @@ class BaseModel:
         A = orth(m.T)
         # A = np.dot(U, U.T)
         Pr = A @ np.linalg.inv(A.T @ A) @ A.T
-        print(U.shape, S.shape, V.shape, A.shape)
+        print(Pr.shape, A.shape)
         # (10, 10) (10,) (400, 400) (10, 10)
         return Pr # (10, 10) - expected (10, 400) or (400, 10) (400, 400) --> dot product with cn
 
