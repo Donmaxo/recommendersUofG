@@ -331,7 +331,7 @@ class MINDIterator(BaseIterator):
         cnt = 0
 
         for index in range(len(self.impr_indexes)):
-            click_title_indexes.append(self.news_title_index[self.histories[index]])
+            click_title_indexes.append(self.histories[index])
             user_indexes.append(self.uindexes[index])
             impr_indexes.append(self.impr_indexes[index])
 
