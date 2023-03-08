@@ -343,10 +343,12 @@ class MINDIterator(BaseIterator):
                     user_indexes,
                     impr_indexes,
                     click_title_indexes,
+                    user_history,
                 )
                 user_indexes = []
                 impr_indexes = []
                 click_title_indexes = []
+                user_history = []
                 cnt = 0
 
         if cnt > 0:
