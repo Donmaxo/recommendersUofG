@@ -517,7 +517,7 @@ class BaseModel:
 
             # TODO get vectors from this
             user_history = user_clicked_news[impr_index]
-            #user_history = user_history[np.nonzero(user_history)]
+            user_history = user_history[np.nonzero(user_history)]
             if n:
                 user_history = user_history[:min(n, len(user_history))]
             if len(user_history) == 0: user_history = [0]

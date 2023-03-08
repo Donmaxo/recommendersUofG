@@ -106,11 +106,11 @@ for n in [5, 10, 15, 20, 24, None][::-1]:
             pred_rank = '[' + ','.join([str(i) for i in pred_rank]) + ']'
             f.write(' '.join([str(impr_index), pred_rank])+ '\n')
     
-    if not n: n == "all"
+    if not n: n = "all"
     f = zipfile.ZipFile(os.path.join(data_path, f'nrms_rd_v4_{n}.zip'), 'w', zipfile.ZIP_DEFLATED)
     f.write(os.path.join(data_path, 'prediction_reldiff.txt'), arcname='prediction.txt')
     f.close()
-    print("Finished {n} user_history.")
+    print(f"Finished {n} user_history.")
 
 print("finitto")
 
