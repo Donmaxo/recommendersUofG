@@ -400,12 +400,12 @@ class BaseModel:
             user_indexes.extend(np.reshape(user_index, -1))
             user_vecs.extend(user_vec)
             # Include the user news click history
-            user_histories.extend(user_input)
+            user_histories.extend(batch_data_input["user_history_batch"])
             print(batch_data_input)
-            print(np.array(user_indexes).shape)    # (32, )
-            print(np.array(user_vecs).shape)       # (32, 400)
-            print(np.array(user_histories).shape)  # (32, 50, 30)
-            print(np.array(batch_data_input).shape)
+            print(np.array(user_indexes).shape)                   # (32, )
+            print(np.array(user_vecs).shape)                      # (32, 400)
+            print(np.array(user_histories).shape)                 # (32, 50, 30) - user_input
+            print(batch_data_input["user_history_batch"].shape)  # (32, 50, 30)
             print(crashed)
         print('user_indexes length:        ', np.array(user_indexes).shape)
         print('user_vecs length:           ', np.array(user_vecs).shape)
@@ -485,7 +485,7 @@ class BaseModel:
             rd.append(user - (cn.T / l2).T)              # comment to use Projection Matrix
         return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
     
-    def run_fast_eval(self, news_filename, behaviors_file, update=False):
+    def run_fast_eval(self, news_filename, behaviors_file, update=False, n=None):
         if update:
             self.test_iterator.update_datasets(news_filename, behaviors_file)
         news_vecs = self.run_news(news_filename)
@@ -519,8 +519,9 @@ class BaseModel:
             # TODO get vectors from this
             user_history = user_clicked_news[impr_index]
             #user_history = user_history[np.nonzero(user_history)]
-            #n = min(5, len(user_history))
-            user_history = user_history#[:n]
+            if n:
+                nn = min(n, len(user_history))
+            user_history = user_history[:nn]
             if len(user_history) == 0: user_history = [0]
             # print(user_history)
             # print(type(user_history))

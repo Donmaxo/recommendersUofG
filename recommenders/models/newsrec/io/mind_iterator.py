@@ -328,12 +328,14 @@ class MINDIterator(BaseIterator):
         user_indexes = []
         impr_indexes = []
         click_title_indexes = []
+        user_history = []
         cnt = 0
 
         for index in range(len(self.impr_indexes)):
-            click_title_indexes.append(self.histories[index])
+            click_title_indexes.append(self.news_title_index[self.histories[index]])
             user_indexes.append(self.uindexes[index])
             impr_indexes.append(self.impr_indexes[index])
+            user_history.aapend(self.histories[index])
 
             cnt += 1
             if cnt >= self.batch_size:
@@ -352,6 +354,7 @@ class MINDIterator(BaseIterator):
                 user_indexes,
                 impr_indexes,
                 click_title_indexes,
+                user_history,
             )
 
     def _convert_user_data(
@@ -359,6 +362,7 @@ class MINDIterator(BaseIterator):
         user_indexes,
         impr_indexes,
         click_title_indexes,
+        user_history,
     ):
         """Convert data into numpy arrays that are good for further model operation.
 
@@ -373,11 +377,13 @@ class MINDIterator(BaseIterator):
         user_indexes = np.asarray(user_indexes, dtype=np.int32)
         impr_indexes = np.asarray(impr_indexes, dtype=np.int32)
         click_title_index_batch = np.asarray(click_title_indexes, dtype=np.int64)
+        user_history_batch = np.asarray(user_history, dtype=int32)
 
         return {
             "user_index_batch": user_indexes,
             "impr_index_batch": impr_indexes,
             "clicked_title_batch": click_title_index_batch,
+            "user_history_batch": user_history_batch
         }
 
     def load_news_from_file(self, news_file):
