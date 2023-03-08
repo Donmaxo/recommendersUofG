@@ -401,12 +401,16 @@ class BaseModel:
             user_vecs.extend(user_vec)
             # Include the user news click history
             user_histories.extend(user_input)
-            print(user_input)
-            print(user_input.shape)
+            print(user_indexes)
+            print(user_vecs)
+            print(user_histories)
+            print(np.array(user_indexes).shape)
+            print(np.array(user_vecs).shape)
+            print(np.array(user_histories).shape)
             print(crashed)
-        print('user_indexes length:        ', len(user_indexes))
-        print('user_vecs length:           ', len(user_vecs))
-        print('user_n_news_vecs_all length:', len(user_histories))
+        print('user_indexes length:        ', np.array(user_indexes).shape)
+        print('user_vecs length:           ', np.array(user_vecs).shape)
+        print('user_n_news_vecs_all length:', np.array(user_histories).shape)
         return dict(zip(user_indexes, user_vecs)), dict(zip(user_indexes, user_histories))
 
     def run_user(self, news_filename, behaviors_file):
@@ -514,14 +518,16 @@ class BaseModel:
             # )
 
             # TODO get vectors from this
-            user_history = user_clicked_news[user_index]
+            user_history = user_clicked_news[impr_index]
             #user_history = user_history[np.nonzero(user_history)]
             #n = min(5, len(user_history))
             user_history = user_history#[:n]
             if len(user_history) == 0: user_history = [0]
-            print(user_history)
-            print(type(user_history))
-            print(user_history.shape)
+            # print(user_history)
+            # print(type(user_history))
+            # print(user_history.shape)           # (50, 30)
+            # print(user_vecs[user_index].shape)  # (400, )
+            # print(impr_index, user_index)       # 0 200461
             user_history = np.stack([news_vecs[i] for i in list(user_history)])
 
 
