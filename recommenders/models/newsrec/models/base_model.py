@@ -401,12 +401,11 @@ class BaseModel:
             user_vecs.extend(user_vec)
             # Include the user news click history
             user_histories.extend(batch_data_input["user_history_batch"])
-            print(batch_data_input)
-            print(np.array(user_indexes).shape)                   # (32, )
-            print(np.array(user_vecs).shape)                      # (32, 400)
-            print(np.array(user_histories).shape)                 # (32, 50, 30) - user_input
-            print(batch_data_input["user_history_batch"].shape)  # (32, 50, 30)
-            print(crashed)
+            # print(batch_data_input)
+            # print(np.array(user_indexes).shape)                   # (32, )
+            # print(np.array(user_vecs).shape)                      # (32, 400)
+            # print(np.array(user_histories).shape)                 # (32, 50)
+            # print(crashed)
         print('user_indexes length:        ', np.array(user_indexes).shape)
         print('user_vecs length:           ', np.array(user_vecs).shape)
         print('user_n_news_vecs_all length:', np.array(user_histories).shape)
