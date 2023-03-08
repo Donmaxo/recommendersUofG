@@ -379,7 +379,7 @@ class MINDIterator(BaseIterator):
         user_indexes = np.asarray(user_indexes, dtype=np.int32)
         impr_indexes = np.asarray(impr_indexes, dtype=np.int32)
         click_title_index_batch = np.asarray(click_title_indexes, dtype=np.int64)
-        user_history_batch = np.asarray(user_history, dtype=int32)
+        user_history_batch = np.asarray(user_history, dtype=np.int32)
 
         return {
             "user_index_batch": user_indexes,
