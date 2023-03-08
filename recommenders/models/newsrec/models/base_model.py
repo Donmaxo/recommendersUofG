@@ -401,7 +401,9 @@ class BaseModel:
             user_vecs.extend(user_vec)
             # Include the user news click history
             user_histories.extend(user_input)
-#             print(user_n_news_vecs_all)
+            print(user_input)
+            print(user_input.shape)
+            print(crashed)
         print('user_indexes length:        ', len(user_indexes))
         print('user_vecs length:           ', len(user_vecs))
         print('user_n_news_vecs_all length:', len(user_histories))
@@ -476,7 +478,8 @@ class BaseModel:
             # cn = self.pr_matrix(cn)  # Project to another spaces
             l2 = np.linalg.norm(cn, axis=1)
             l2 = np.where(l2 == 0, 1, l2)
-            rd.append(user - (self.prm @ (cn.T / l2)).T)
+            # rd.append(user - (self.prm @ (cn.T / l2)).T) # comment not to use Projection Matrix
+            rd.append(user - (cn.T / l2).T)              # comment to use Projection Matrix
         return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
     
     def run_fast_eval(self, news_filename, behaviors_file, update=False):
@@ -496,7 +499,7 @@ class BaseModel:
         group_labels = []
         group_preds = []
         group_preds_reldiff = []
-
+        print("updated to use all uh including 0s")
         for (
                 impr_index,
                 news_index,
@@ -512,11 +515,14 @@ class BaseModel:
 
             # TODO get vectors from this
             user_history = user_clicked_news[user_index]
-            user_history = user_history[np.nonzero(user_history)]
-            n = min(20, len(user_history))
-            user_history = user_history[:n]
+            #user_history = user_history[np.nonzero(user_history)]
+            #n = min(5, len(user_history))
+            user_history = user_history#[:n]
             if len(user_history) == 0: user_history = [0]
-            user_history = np.stack([news_vecs[i] for i in user_history])
+            print(user_history)
+            print(type(user_history))
+            print(user_history.shape)
+            user_history = np.stack([news_vecs[i] for i in list(user_history)])
 
 
             # Call the reldiff helper function to obtain the "stack" after the RelDiff has been applied
