@@ -520,8 +520,7 @@ class BaseModel:
             user_history = user_clicked_news[impr_index]
             #user_history = user_history[np.nonzero(user_history)]
             if n:
-                nn = min(n, len(user_history))
-            user_history = user_history[:nn]
+                user_history = user_history[:min(n, len(user_history))]
             if len(user_history) == 0: user_history = [0]
             # print(user_history)
             # print(type(user_history))

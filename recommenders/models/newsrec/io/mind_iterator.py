@@ -335,7 +335,7 @@ class MINDIterator(BaseIterator):
             click_title_indexes.append(self.news_title_index[self.histories[index]])
             user_indexes.append(self.uindexes[index])
             impr_indexes.append(self.impr_indexes[index])
-            user_history.aapend(self.histories[index])
+            user_history.append(self.histories[index])
 
             cnt += 1
             if cnt >= self.batch_size:
