@@ -477,11 +477,11 @@ class BaseModel:
         rd = []
         for n in candidate_news:
             cn = n * user_history 
-            # cn = self.pr_matrix(cn)  # Project to another spaces
-            l2 = np.linalg.norm(cn, axis=1)
-            l2 = np.where(l2 == 0, 1, l2)
+            ## l2 = np.linalg.norm(cn, axis=1)
+            ## l2 = np.where(l2 == 0, 1, l2)
             # rd.append(user - (self.prm @ (cn.T / l2)).T) # comment not to use Projection Matrix
-            rd.append(user - (cn.T / l2).T)              # comment to use Projection Matrix
+            ##rd.append(user - (cn.T / l2).T)              # comment to use Projection Matrix
+            rd.append(user - cn)
         return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
     
     def run_fast_eval(self, news_filename, behaviors_file, update=False, n=None):
@@ -501,7 +501,7 @@ class BaseModel:
         group_labels = []
         group_preds = []
         group_preds_reldiff = []
-        print("updated to use all uh including 0s")
+
         for (
                 impr_index,
                 news_index,
@@ -519,8 +519,8 @@ class BaseModel:
             user_history = user_clicked_news[impr_index]
             user_history = user_history[np.nonzero(user_history)]
             if n:
-                # user_history = user_history[:min(n, len(user_history))]
-                user_history = user_history[len(user_history) - min(n, len(user_history)): ]
+                user_history = user_history[:min(n, len(user_history))]
+                ## user_history = user_history[len(user_history) - min(n, len(user_history)): ]
             if len(user_history) == 0: user_history = [0]
             # print(user_history)
             # print(type(user_history))
