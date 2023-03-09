@@ -84,7 +84,7 @@ model.model.load_weights(os.path.join(model_path, "nrms_ckpt"))
 
 
 # print(model.run_fast_eval(valid_news_file, valid_behaviors_file))
-for n in [5, 10, 15, 20, 24, None][::-1]:
+for n in [5, 10, 15, 20, 24, None]:
     group_impr_indexes, group_labels, group_preds, gp_reldiff = model.run_fast_eval(test_news_file, test_behaviors_file, update=True, n=n)
 
     # with open(os.path.join(data_path, 'prediction.txt'), 'w') as f:
@@ -107,7 +107,7 @@ for n in [5, 10, 15, 20, 24, None][::-1]:
             f.write(' '.join([str(impr_index), pred_rank])+ '\n')
     
     if not n: n = "all"
-    f = zipfile.ZipFile(os.path.join(data_path, f'nrms_rd_v4_{n}.zip'), 'w', zipfile.ZIP_DEFLATED)
+    f = zipfile.ZipFile(os.path.join(data_path, f'nrms_rd_v4_{n}_rev.zip'), 'w', zipfile.ZIP_DEFLATED)
     f.write(os.path.join(data_path, 'prediction_reldiff.txt'), arcname='prediction.txt')
     f.close()
     print(f"Finished {n} user_history.")
