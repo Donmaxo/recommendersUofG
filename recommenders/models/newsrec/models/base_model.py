@@ -477,11 +477,25 @@ class BaseModel:
         rd = []
         for n in candidate_news:
             cn = n * user_history 
-            ## l2 = np.linalg.norm(cn, axis=1)
-            ## l2 = np.where(l2 == 0, 1, l2)
+
+            # """ L2 norm of each vector """
+            # l2 = np.linalg.norm(cn, axis=1)
+            # l2 = np.where(l2 == 0, 1, l2)
+            # rd.append(user - (cn.T / l2).T)
+
+            # """ L2 norm of each vector with Projection Matrix """
+            # l2 = np.linalg.norm(cn, axis=1)
+            # l2 = np.where(l2 == 0, 1, l2)
             # rd.append(user - (self.prm @ (cn.T / l2)).T) # comment not to use Projection Matrix
-            ##rd.append(user - (cn.T / l2).T)              # comment to use Projection Matrix
-            rd.append(user - cn)
+            
+            # """ without any normalisation """
+            # rd.append(user - cn)
+
+            """ L2 norm of the whole matrix """
+            l2 = np.linalg.norm(cn)
+            l2 = np.where(l2 == 0, 1, l2)
+            rd.append(user - (cn / l2))
+
         return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
     
     def run_fast_eval(self, news_filename, behaviors_file, update=False, n=None):
