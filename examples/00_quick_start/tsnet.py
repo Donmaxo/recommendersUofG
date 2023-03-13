@@ -14,7 +14,9 @@ def run(i):
     u = list(json.loads(lst[1]))   # user embedding
     ur = list(json.loads(lst[2]))  # user reldiff embeddings (length of candidate_news)
     cn = list(json.loads(lst[3]))  # candidate news embeddings
-    #uh_all = list(json.loads(lst[4]))
+    ur_all = list(json.loads(lst[4])) # all user reldiff with candidate news with user history
+    pred_rd = list(json.loads(lst[5]))  # all predictions ordered by reldiff
+    pred_dot = lsit(json.loads(lst[6])) # all predictions ordered by dot product
 
     tsne = TSNE(n_components=2, perplexity=30, n_iter=1000)
 
@@ -30,7 +32,8 @@ def run(i):
     uh_plt = plt.scatter(to_plot[:-3, 0], to_plot[:-3, 1], color='b')     # clicked news histories
 
     plt.legend((ur_plt, u_plt, cn_plt, uh_plt),
-               ("User Reldiff Embedding", "User dot Embedding", "Embedding of candidate news", "Embeddings of user history"))
+               ("User Reldiff Embedding", "User dot Embedding", "Embedding of candidate news", "Embeddings of user history"),
+               bbox_to_anchor=(1.1, 1.05))
 
     plt.savefig(f'scatterplot_t-sne-u5-cn{i}.png')
 
@@ -38,4 +41,4 @@ def run(i):
 
 
 if __name__ == "__main__":
-    run(sys.argv[1])
+    run(int(sys.argv[1]))
