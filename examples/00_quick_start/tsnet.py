@@ -37,6 +37,5 @@ def run(i):
     print(f"scatter.png")
 
 
-def main():
-    run(sys.argv[2])
-    
+if __name__ == "__main__":
+    run(sys.argv[1])
