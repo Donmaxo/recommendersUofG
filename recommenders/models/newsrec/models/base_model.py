@@ -478,10 +478,10 @@ class BaseModel:
         for n in candidate_news:
             cn = n * user_history 
 
-            # """ L2 norm of each vector """
-            # l2 = np.linalg.norm(cn, axis=1)
-            # l2 = np.where(l2 == 0, 1, l2)
-            # rd.append(user - (cn.T / l2).T)
+            """ L2 norm of each vector """
+            l2 = np.linalg.norm(cn, axis=1)
+            l2 = np.where(l2 == 0, 1, l2)
+            rd.append(user - (cn.T / l2).T)
 
             # """ L2 norm of each vector with Projection Matrix """
             # l2 = np.linalg.norm(cn, axis=1)
@@ -491,12 +491,13 @@ class BaseModel:
             # """ without any normalisation """
             # rd.append(user - cn)
 
-            """ L2 norm of the whole matrix """
-            l2 = np.linalg.norm(cn)
-            l2 = np.where(l2 == 0, 1, l2)
-            rd.append(user - (cn / l2))
+            # """ L2 norm of the whole matrix """
+            # l2 = np.linalg.norm(cn)
+            # l2 = np.where(l2 == 0, 1, l2)
+            # rd.append(user - (cn / l2))
 
-        return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
+        # return np.mean(rd, axis=1)  # np.array of length len(candidate_news) that is the RelDiffs of user embeddings
+        return rd
     
     def run_fast_eval(self, news_filename, behaviors_file, update=False, n=None):
         if update:
@@ -546,6 +547,8 @@ class BaseModel:
 
             # Call the reldiff helper function to obtain the "stack" after the RelDiff has been applied
             user_vecs_reldiff = self.reldiff(user_vecs[impr_index], user_history, news_stack)
+            user_vecs_reldiff_a_lot_more_information = user_vecs_reldiff
+            user_vecs_reldiff = np.mean(user_vecs_reldiff, axis=1)
 
             # Calculate a dot product between the RelDiff embeddings and the normalised candidate_news==stack
             pred_reldiff = [np.dot(news, user) for news, user in zip(news_stack, user_vecs_reldiff)]
@@ -555,5 +558,16 @@ class BaseModel:
             # group_preds.append(pred)
             # Modify to append and return the original predictions and also the RelDiff ones
             group_preds_reldiff.append(pred_reldiff)
+
+
+            if impr_index == 5:
+                import os
+                with open(os.path.join("/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", "nrms_rd_embds.txt")) as f:
+                    f.write('~'.join(str(user_history)) + '\n')
+                    f.write('~'.join(str(user_vecs_reldiff)) + '\n')
+                    f.write('~'.join(str(candidate_news)) + '\n')
+                    f.write('~'.join(str(user_vecs_reldiff_a_lot_more_information)) + '\n')
+                return None, None, None, None
+
         group_preds = group_preds_reldiff
         return group_impr_indexes, group_labels, group_preds, group_preds_reldiff
