@@ -4,7 +4,7 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 
 
-with open("nrms_rd_embds.txt") as f:
+with open("nrms_rd_embds.json", 'r') as f:
     lst = f.read()
 
 lst = lst.split('\n')
