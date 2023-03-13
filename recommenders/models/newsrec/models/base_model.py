@@ -575,7 +575,7 @@ class BaseModel:
                     f.write(json.dumps(news_stack.tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff_a_lot_more_information.tolist()) + '\n')
                     f.write(json.dumps([str(i) for i in pred_reldiff]) + '\n')
-                    f.write(json.dumps([ str i for i in np.dot(news_stack, user_vecs[impr_index])]) + '\n')
+                    f.write(json.dumps([str(i) for i in np.dot(news_stack, user_vecs[impr_index])]) + '\n')
                 return None, None, None, None
 
         group_preds = group_preds_reldiff
