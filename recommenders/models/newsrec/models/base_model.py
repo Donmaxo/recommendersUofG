@@ -547,7 +547,7 @@ class BaseModel:
 
             # Call the reldiff helper function to obtain the "stack" after the RelDiff has been applied
             user_vecs_reldiff = self.reldiff(user_vecs[impr_index], user_history, news_stack)
-            user_vecs_reldiff_a_lot_more_information = user_vecs_reldiff
+            user_vecs_reldiff_a_lot_more_information = np.array(user_vecs_reldiff)
             user_vecs_reldiff = np.mean(user_vecs_reldiff, axis=1)
 
             # Calculate a dot product between the RelDiff embeddings and the normalised candidate_news==stack
