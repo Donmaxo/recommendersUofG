@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import sys
 
 
-def run(i):
-    with open("nrms_rd_embds.json", 'r') as f:
+def run(name, i):
+    with open(name, 'r') as f:
         lst = f.read()
 
     lst = lst.split('\n')
@@ -33,8 +33,8 @@ def run(i):
 
     plt.legend((ur_plt, u_plt, cn_plt, uh_plt),
                ("User Reldiff Embedding", "User dot Embedding", "Embedding of candidate news", "Embeddings of user history"),
-               bbox_to_anchor=(0.5, 1.05),
-               loc='upper center',
+               bbox_to_anchor=(1.5, 1.05),
+               loc='upper right',
                fancybox=True)
 
     plt.savefig(f'scatterplot_t-sne-u5-cn{i}.png')
@@ -43,4 +43,4 @@ def run(i):
 
 
 if __name__ == "__main__":
-    run(int(sys.argv[1]))
+    run(sys.argv[1], int(sys.argv[2]))

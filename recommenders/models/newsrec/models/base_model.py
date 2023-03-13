@@ -560,7 +560,7 @@ class BaseModel:
             group_preds_reldiff.append(pred_reldiff)
 
 
-            if impr_index == 5:
+            if impr_index in [2, 5]:
                 import os
                 import json
                 # with open(os.path.join("/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", "nrms_rd_embds.txt"), 'w') as f:
@@ -568,14 +568,14 @@ class BaseModel:
                 #     f.write('~'.join(str(user_vecs_reldiff)) + '\n')
                 #     f.write('~'.join(str(candidate_news)) + '\n')
                 #     f.write('~'.join(str(user_vecs_reldiff_a_lot_more_information)) + '\n')
-                with open(os.path.join("/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", "nrms_rd_embds.json"), 'w') as f:
+                with open(os.path.join("/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", "nrms_rd_embds.json-{impr_index}"), 'w') as f:
                     f.write(json.dumps(user_history.tolist()) + '\n')
                     f.write(json.dumps(user_vecs[impr_index].tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
                     f.write(json.dumps(news_stack.tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff_a_lot_more_information.tolist()) + '\n')
-                    f.write(json.dumps([str(i) for i in pred_reldiff]) + '\n')
-                    f.write(json.dumps([str(i) for i in np.dot(news_stack, user_vecs[impr_index])]) + '\n')
+                    f.write(json.dumps(np.argsort(pred_reldiff)[::-1]) + '\n')
+                    f.write(json.dumps(np.argsort(np.dot(news_stack, user_vecs[impr_index]))[::-1]) + '\n')
                 return None, None, None, None
 
         group_preds = group_preds_reldiff
