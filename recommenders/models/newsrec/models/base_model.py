@@ -570,6 +570,7 @@ class BaseModel:
                 #     f.write('~'.join(str(user_vecs_reldiff_a_lot_more_information)) + '\n')
                 with open(os.path.join("/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", "nrms_rd_embds.json"), 'w') as f:
                     f.write(json.dumps(user_history.tolist()) + '\n')
+                    f.write(json.dumps(user_vecs[impr_index].tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
                     f.write(json.dumps(news_stack.tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff_a_lot_more_information.tolist()) + '\n')

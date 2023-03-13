@@ -10,21 +10,26 @@ with open("nrms_rd_embds.json", 'r') as f:
 lst = lst.split('\n')
 uh = list(json.loads(lst[0]))
 u = list(json.loads(lst[1]))
-cn = list(json.loads(lst[2]))
-#uh_all = list(json.loads(lst[3]))
+ur = list(json.loads(lst[2]))
+cn = list(json.loads(lst[3]))
+#uh_all = list(json.loads(lst[4]))
 
 tsne = TSNE(n_components=2, perplexity=30, n_iter=1000)
 
-to_plot = tsne.fit_transform(uh.extend([u[0], cn[0]]))
+i = 0
+all_vecs.extend([u, ur[i], cn[i]])
 
-# fig, ax = plt.subplots(nrows=1, ncols=3)
-fig = plt.figure()
-ax = fig.add_subplot()
+to_plot = tsne.fit_transform(all_vecs)
 
-ax.scatter(u_tsne[-2:-1, 0], u_tsne[-2:-1, 1], color='r')
-ax.scatter(cn_tsne[-1:, 0], cn_tsne[-1:, 1], color='g')
-ax.scatter(uh_tsne[:-2, 0], uh_tsne[:-2, 1], color='b')
 
-plt.savefig('scatter.png')
+ur_plt = plt.scatter(to_plot[-2:-1, 0], to_plot[-2:-1, 1], color='r') # user reldiff embedding
+u_plt = plt.scatter(to_plot[-3:-2, 0], to_plot[-3:-2. 1], color='g')  # user dot product embedding
+cn_plt = plt.scatter(to_plot[-1:, 0], to_plot[-1:, 1], color='m')     # candidate news embedding
+uh_plt = plt.scatter(to_plot[:-2, 0], to_plot[:-2, 1], color='b')     # clicked news histories
 
-print(u_tsne)
+plt.legend((ur_plt, u_plt, cn_plt, uh_plt),
+           ("User Reldiff Embedding", "User dot Embedding", "Embedding of candidate news", "Embeddings of user history"))
+
+plt.savefig(f'scatterplot_t-sne-u5-cn{i}.png')
+
+print(f"scatter.png")
