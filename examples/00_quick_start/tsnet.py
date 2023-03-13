@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 with open("nrms_rd_embds.json", 'r') as f:
     lst = f.read()
 
-lst = lst.split('\nvim')
+lst = lst.split('\n')
 uh = list(json.loads(lst[0]))
 u = list(json.loads(lst[1]))
 cn = list(json.loads(lst[2]))
@@ -15,7 +15,7 @@ cn = list(json.loads(lst[2]))
 
 tsne = TSNE(n_components=2, perplexity=30, n_iter=1000)
 
-to_plot = tsne.fit_transform(uh.append(u[0]).append([cn[0]]))
+to_plot = tsne.fit_transform(uh.extend([u[0], cn[0]]))
 
 # fig, ax = plt.subplots(nrows=1, ncols=3)
 fig = plt.figure()
