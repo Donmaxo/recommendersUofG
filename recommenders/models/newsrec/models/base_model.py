@@ -500,6 +500,7 @@ class BaseModel:
         return rd
     
     def run_fast_eval(self, news_filename, behaviors_file, update=False, n=None):
+        print("update with f string")
         if update:
             self.test_iterator.update_datasets(news_filename, behaviors_file)
         news_vecs = self.run_news(news_filename)
@@ -569,14 +570,14 @@ class BaseModel:
                 #     f.write('~'.join(str(user_vecs_reldiff)) + '\n')
                 #     f.write('~'.join(str(candidate_news)) + '\n')
                 #     f.write('~'.join(str(user_vecs_reldiff_a_lot_more_information)) + '\n')
-                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", "nrms_rd_embds-{impr_index}.json"), 'w') as f:
+                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_rd_embds-{impr_index}.json"), 'w') as f:
                     f.write(json.dumps(user_history.tolist()) + '\n')
                     f.write(json.dumps(user_vecs[impr_index].tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
                     f.write(json.dumps(news_stack.tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff_a_lot_more_information.tolist()) + '\n')
-                    f.write(json.dumps((np.argsort(pred_reldiff)[::-1]).tolist()) + '\n')
-                    f.write(json.dumps((np.argsort(np.dot(news_stack, user_vecs[impr_index]))[::-1]).tolist()) + '\n')
+                    f.write(json.dumps((np.argsort(pred_reldiff)).tolist()[::-1]) + '\n')
+                    f.write(json.dumps((np.argsort(np.dot(news_stack, user_vecs[impr_index]))).tolist()[::-1]) + '\n')
                 if impr_index == test_impr[-1]:
                     return None, None, None, None
 
