@@ -8,7 +8,7 @@ import sys
 def run(name, i):
     with open(name, 'r') as f:
         lst = f.read()
-
+    u_index = name[name.index('-') + 1 : name.index('.')]
     lst = lst.split('\n')
     uh = list(json.loads(lst[0]))  # user history
     u = list(json.loads(lst[1]))   # user embedding
@@ -37,12 +37,12 @@ def run(name, i):
                loc='upper right',
                fancybox=True)
 
-    plt.savefig(f'scatterplot_t-sne-u5-cn{i}.png', bbox_inches='tight')
+    plt.savefig(f'scatterplot_t-sne-u{u_index}-cn{i}.png', bbox_inches='tight')
 
     print("rd: ", pred_rd)
     print('dot:', pred_dot)
 
-    print(f'scatterplot_t-sne-u5-cn{i}.png')
+    print(f'scatterplot_t-sne-u{u_index}-cn{i}.png')
 
 
 if __name__ == "__main__":
