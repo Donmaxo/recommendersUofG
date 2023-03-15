@@ -478,15 +478,15 @@ class BaseModel:
         for n in candidate_news:
             cn = n * user_history 
 
-            """ L2 norm of each vector """
-            l2 = np.linalg.norm(cn, axis=1)
-            l2 = np.where(l2 == 0, 1, l2)
-            rd.append(user - (cn.T / l2).T)
-
-            # """ L2 norm of each vector with Projection Matrix """
+            # """ L2 norm of each vector """
             # l2 = np.linalg.norm(cn, axis=1)
             # l2 = np.where(l2 == 0, 1, l2)
-            # rd.append(user - (self.prm @ (cn.T / l2)).T) # comment not to use Projection Matrix
+            # rd.append(user - (cn.T / l2).T)
+
+            """ L2 norm of each vector with Projection Matrix """
+            l2 = np.linalg.norm(cn, axis=1)
+            l2 = np.where(l2 == 0, 1, l2)
+            rd.append(user - (self.prm @ (cn.T / l2)).T) # comment not to use Projection Matrix
             
             # """ without any normalisation """
             # rd.append(user - cn)
