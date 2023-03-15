@@ -37,7 +37,7 @@ def run(name, i):
                loc='upper right',
                fancybox=True)
 
-    plt.savefig(f'scatterplot_t-sne-u5-cn{i}.png')
+    plt.savefig(f'scatterplot_t-sne-u5-cn{i}.png', bbox_inches='tight')
 
     print("rd: ", pred_rd)
     print('dot:', pred_dot)
