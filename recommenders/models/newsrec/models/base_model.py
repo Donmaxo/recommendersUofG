@@ -560,7 +560,8 @@ class BaseModel:
             group_preds_reldiff.append(pred_reldiff)
 
 
-            if impr_index in [2, 5]:
+            test_impr = [2, 5, 7, 10, 15]
+            if impr_index in test_impr:
                 import os
                 import json
                 # with open(os.path.join("/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", "nrms_rd_embds.txt"), 'w') as f:
@@ -576,7 +577,8 @@ class BaseModel:
                     f.write(json.dumps(user_vecs_reldiff_a_lot_more_information.tolist()) + '\n')
                     f.write(json.dumps((np.argsort(pred_reldiff)[::-1])).tolist() + '\n')
                     f.write(json.dumps((np.argsort(np.dot(news_stack, user_vecs[impr_index]))[::-1])).tolist() + '\n')
-                return None, None, None, None
+                if impr_index == test_impr[-1]:
+                    return None, None, None, None
 
         group_preds = group_preds_reldiff
         return group_impr_indexes, group_labels, group_preds, group_preds_reldiff
