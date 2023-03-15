@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import sys
+from openTSNE import TSNE as OTSNE
 
 
 def run(name, i):
@@ -26,23 +27,43 @@ def run(name, i):
     to_plot = tsne.fit_transform(all_vecs)
 
 
-    ur_plt = plt.scatter(to_plot[-2:-1, 0], to_plot[-2:-1, 1], color='r') # user reldiff embedding
-    u_plt = plt.scatter(to_plot[-3:-2, 0], to_plot[-3:-2, 1], color='g')  # user dot product embedding
-    cn_plt = plt.scatter(to_plot[-1:, 0], to_plot[-1:, 1], color='m')     # candidate news embedding
     uh_plt = plt.scatter(to_plot[:-3, 0], to_plot[:-3, 1], color='b')     # clicked news histories
+    u_plt = plt.scatter(to_plot[-3:-2, 0], to_plot[-3:-2, 1], color='g')  # user dot product embedding
+    ur_plt = plt.scatter(to_plot[-2:-1, 0], to_plot[-2:-1, 1], color='r') # user reldiff embedding
+    cn_plt = plt.scatter(to_plot[-1:, 0], to_plot[-1:, 1], color='m')     # candidate news embedding
 
     plt.legend((ur_plt, u_plt, cn_plt, uh_plt),
-               ("User Reldiff Embedding", "User dot Embedding", "Embedding of candidate news", "Embeddings of user history"),
+               ("User Reldiff Embedding", "User Embedding", "Embedding of candidate news", "Embeddings of user history"),
                bbox_to_anchor=(1.5, 1.05),
                loc='upper right',
                fancybox=True)
 
     plt.savefig(f'scatterplot_t-sne-u{u_index}-cn{i}.png', bbox_inches='tight')
+    plt.show()
 
     print("rd: ", pred_rd)
     print('dot:', pred_dot)
 
     print(f'scatterplot_t-sne-u{u_index}-cn{i}.png')
+
+    ## Other graph approach
+    otsne = OTSNE(
+        perplexity=30,
+        metric="euclidean",
+        n_jobs=8,
+        random_state=42,
+        verbose=True
+    )
+
+    uh_embd = otsne.fit(uh)
+    u_embd = otse.transform(u)
+    ur_embd = otse.transform(ur[i])
+    cn_embd = otse.transform(cn[i])
+
+    fig, ax = plt.sublots(figsize=(8,8))
+    utils.plot(uh_embd, uh, colors=utils.MACOSKO_COLORS)
+    plt.savefig('scatter.png')
+
 
 
 if __name__ == "__main__":
