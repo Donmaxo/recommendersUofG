@@ -60,9 +60,17 @@ def run(name, i):
     ur_embd = uh_embd.transform(np.array([ur[i]]))
     cn_embd = uh_embd.transform(np.array([cn[i]]))
 
-    fig, ax = plt.sublots(figsize=(8,8))
-    utils.plot(uh_embd, uh, colors=utils.MACOSKO_COLORS)
-    plt.savefig('scatter.png')
+    uh_plt = plt.scatter(uh_embd[:, 0], uh_embd[, 1], color='b')     # clicked news histories
+    u_plt = plt.scatter(u_embd[:, 0], u_embd[:, 1], color='g')  # user dot product embedding
+    ur_plt = plt.scatter(ur_embd[:, 0], ur_embd[:, 1], color='r') # user reldiff embedding
+    cn_plt = plt.scatter(cn_embd[:, 0], cn_embd[:, 1], color='m')     # candidate news embedding
+
+    plt.legend((ur_plt, u_plt, cn_plt, uh_plt),
+               ("User Reldiff Embedding", "User Embedding", "Embedding of candidate news", "Embeddings of user history"),
+               bbox_to_anchor=(1.5, 1.05),
+               loc='upper right',
+               fancybox=True)
+    plt.savefig(f'scatterplot_open-t-sne-u{u_index}-cn{i}.png')
 
 
 
