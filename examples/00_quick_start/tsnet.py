@@ -60,7 +60,7 @@ def run(name, i):
     ur_embd = uh_embd.transform(np.array([ur[i]]))
     cn_embd = uh_embd.transform(np.array([cn[i]]))
 
-    uh_plt = plt.scatter(uh_embd[:, 0], uh_embd[, 1], color='b')     # clicked news histories
+    uh_plt = plt.scatter(uh_embd[:, 0], uh_embd[:, 1], color='b')     # clicked news histories
     u_plt = plt.scatter(u_embd[:, 0], u_embd[:, 1], color='g')  # user dot product embedding
     ur_plt = plt.scatter(ur_embd[:, 0], ur_embd[:, 1], color='r') # user reldiff embedding
     cn_plt = plt.scatter(cn_embd[:, 0], cn_embd[:, 1], color='m')     # candidate news embedding
