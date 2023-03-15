@@ -560,7 +560,7 @@ class BaseModel:
             group_preds_reldiff.append(pred_reldiff)
 
 
-            test_impr = [2, 5, 7, 10, 15]
+            test_impr = [5, 7, 10, 11, 14] # 5 - longer, swaps # 7 - short, no change # 10 - long, huge change # 11 - medium lot of swaps, # 14 - medium, one swap
             if impr_index in test_impr:
                 import os
                 import json
@@ -575,8 +575,8 @@ class BaseModel:
                     f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
                     f.write(json.dumps(news_stack.tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff_a_lot_more_information.tolist()) + '\n')
-                    f.write(json.dumps((np.argsort(pred_reldiff)[::-1])).tolist() + '\n')
-                    f.write(json.dumps((np.argsort(np.dot(news_stack, user_vecs[impr_index]))[::-1])).tolist() + '\n')
+                    f.write(json.dumps((np.argsort(pred_reldiff)[::-1]).tolist()) + '\n')
+                    f.write(json.dumps((np.argsort(np.dot(news_stack, user_vecs[impr_index]))[::-1]).tolist()) + '\n')
                 if impr_index == test_impr[-1]:
                     return None, None, None, None
 
