@@ -552,7 +552,9 @@ class BaseModel:
             user_vecs_reldiff = np.mean(user_vecs_reldiff, axis=1)
 
             # Calculate a dot product between the RelDiff embeddings and the normalised candidate_news==stack
-            pred_reldiff = [np.dot(news, user) for news, user in zip(news_stack, user_vecs_reldiff)]
+            # try user_vecs_reldiff dot user_vecs[imr_index]
+            pred_reldiff = np.dot(user_vecs_reldiff, user_vecs[impr_index])
+            # pred_reldiff = [np.dot(news, user) for news, user in zip(news_stack, user_vecs_reldiff)]
 
             group_impr_indexes.append(impr_index)
             group_labels.append(label)
@@ -575,8 +577,8 @@ class BaseModel:
                     f.write(json.dumps(dmp) + '\n')
                     dmp = (np.argsort(np.dot(news_stack, user_vecs[impr_index]))).tolist()[::-1]
                     f.write(json.dumps(dmp) + '\n')
-                if impr_index == test_impr[-1]:
-                    return None, None, None, None
+                # if impr_index == test_impr[-1]:
+                #     return None, None, None, None
 
         group_preds = group_preds_reldiff
         return group_impr_indexes, group_labels, group_preds, group_preds_reldiff
