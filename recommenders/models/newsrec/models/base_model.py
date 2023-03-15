@@ -535,7 +535,7 @@ class BaseModel:
             user_history = user_clicked_news[impr_index]
             user_history = user_history[np.nonzero(user_history)]
             if n:
-                user_history = user_history[:min(n, len(user_history))]
+                user_history = user_history[:min(nnn, len(user_history))]
                 ## user_history = user_history[len(user_history) - min(n, len(user_history)): ]
             if len(user_history) == 0: user_history = [0]
             # print(user_history)
@@ -567,7 +567,7 @@ class BaseModel:
             if impr_index in test_impr:
                 import os
                 import json
-                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_rd_embds-{impr_index + 1}.json"), 'w') as f:
+                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_rd_embds-{n}uh-{impr_index + 1}.json"), 'w') as f:
                     f.write(json.dumps(user_history.tolist()) + '\n')
                     f.write(json.dumps(user_vecs[impr_index].tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
