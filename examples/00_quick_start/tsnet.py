@@ -55,10 +55,10 @@ def run(name, i):
         verbose=True
     )
 
-    uh_embd = otsne.fit(uh)
-    u_embd = otse.transform(u)
-    ur_embd = otse.transform(ur[i])
-    cn_embd = otse.transform(cn[i])
+    uh_embd = otsne.fit(np.array(uh))
+    u_embd = otse.transform(np.array(u))
+    ur_embd = otse.transform(np.array(ur[i]))
+    cn_embd = otse.transform(np.array(cn[i]))
 
     fig, ax = plt.sublots(figsize=(8,8))
     utils.plot(uh_embd, uh, colors=utils.MACOSKO_COLORS)
