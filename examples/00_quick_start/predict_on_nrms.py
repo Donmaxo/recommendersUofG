@@ -86,7 +86,6 @@ model.model.load_weights(os.path.join(model_path, "nrms_ckpt"))
 # print(model.run_fast_eval(valid_news_file, valid_behaviors_file))
 # for n in [5, 10, 15, 20, 24, None]:
 for n in [10]:
-    print("whopsie")
     group_impr_indexes, group_labels, group_preds, gp_reldiff = model.run_fast_eval(test_news_file, test_behaviors_file, update=True, n=n)
 
     # with open(os.path.join(data_path, 'prediction.txt'), 'w') as f:

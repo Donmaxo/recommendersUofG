@@ -39,7 +39,10 @@ def run(name, i):
 
     plt.savefig(f'scatterplot_t-sne-u5-cn{i}.png')
 
-    print(f"scatter.png")
+    print("rd: ", pred_rd)
+    print('dot:', pred_dot)
+
+    print(f'scatterplot_t-sne-u5-cn{i}.png')
 
 
 if __name__ == "__main__":
