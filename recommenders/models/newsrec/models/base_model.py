@@ -478,15 +478,15 @@ class BaseModel:
         for n in candidate_news:
             cn = n * user_history 
 
-            # """ L2 norm of each vector """
-            # l2 = np.linalg.norm(cn, axis=1)
-            # l2 = np.where(l2 == 0, 1, l2)
-            # rd.append(user - (cn.T / l2).T)
-
-            """ L2 norm of each vector with Projection Matrix """
+            """ L2 norm of each vector """
             l2 = np.linalg.norm(cn, axis=1)
             l2 = np.where(l2 == 0, 1, l2)
-            rd.append(user - (self.prm @ (cn.T / l2)).T) # comment not to use Projection Matrix
+            rd.append(user - (cn.T / l2).T)
+
+            # """ L2 norm of each vector with Projection Matrix """
+            # l2 = np.linalg.norm(cn, axis=1)
+            # l2 = np.where(l2 == 0, 1, l2)
+            # rd.append(user - (self.prm @ (cn.T / l2)).T) # comment not to use Projection Matrix
             
             # """ without any normalisation """
             # rd.append(user - cn)
@@ -531,7 +531,7 @@ class BaseModel:
             #     user_vecs[impr_index],
             # )
 
-            # TODO get vectors from this
+            # Tegt only non zero news indexes
             user_history = user_clicked_news[impr_index]
             user_history = user_history[np.nonzero(user_history)]
             if n:
@@ -552,9 +552,9 @@ class BaseModel:
             user_vecs_reldiff = np.mean(user_vecs_reldiff, axis=1)
 
             # Calculate a dot product between the RelDiff embeddings and the normalised candidate_news==stack
-            # try user_vecs_reldiff dot user_vecs[imr_index]
-            pred_reldiff = np.dot(user_vecs_reldiff, user_vecs[impr_index])
-            # pred_reldiff = [np.dot(news, user) for news, user in zip(news_stack, user_vecs_reldiff)]
+            # try user_vecs_reldiff dot user_vecs[imr_index] - lot worse performance
+            # pred_reldiff = np.dot(user_vecs_reldiff, user_vecs[impr_index])
+            pred_reldiff = [np.dot(news, user) for news, user in zip(news_stack, user_vecs_reldiff)]
 
             group_impr_indexes.append(impr_index)
             group_labels.append(label)
