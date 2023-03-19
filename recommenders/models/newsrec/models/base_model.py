@@ -473,7 +473,6 @@ class BaseModel:
         return Pr # (10, 10) - expected (10, 400) or (400, 10) (400, 400) --> dot product with cn
 
     def reldiff(self, user, user_history, candidate_news):
-        # TODO test Projection matrix
         rd = []
         for n in candidate_news:
             cn = n * user_history 
@@ -577,8 +576,8 @@ class BaseModel:
                     f.write(json.dumps(dmp) + '\n')
                     dmp = (np.argsort(np.dot(news_stack, user_vecs[impr_index]))).tolist()[::-1]
                     f.write(json.dumps(dmp) + '\n')
-                # if impr_index == test_impr[-1]:
-                #     return None, None, None, None
+                if impr_index == test_impr[-1]:
+                    return None, None, None, None
 
         group_preds = group_preds_reldiff
         return group_impr_indexes, group_labels, group_preds, group_preds_reldiff
