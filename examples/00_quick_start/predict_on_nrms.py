@@ -85,20 +85,20 @@ model.model.load_weights(os.path.join(model_path, "nrms_ckpt"))
 
 # print(model.run_fast_eval(valid_news_file, valid_behaviors_file))
 # for n in [5, 10, 15, 20, 24, None]:
-for n in [5]:
+for n in [10]:
     group_impr_indexes, group_labels, group_preds, gp_reldiff = model.run_fast_eval(test_news_file, test_behaviors_file, update=True, n=n)
 
-    # with open(os.path.join(data_path, 'prediction.txt'), 'w') as f:
-    #     for impr_index, preds in tqdm(zip(group_impr_indexes, group_preds)):
-    #         impr_index += 1
-    #         pred_rank = (np.argsort(np.argsort(preds)[::-1]) + 1).tolist()
-    #         pred_rank = '[' + ','.join([str(i) for i in pred_rank]) + ']'
-    #         f.write(' '.join([str(impr_index), pred_rank])+ '\n')
+    with open(os.path.join(data_path, 'prediction.txt'), 'w') as f:
+        for impr_index, preds in tqdm(zip(group_impr_indexes, group_preds)):
+            impr_index += 1
+            pred_rank = (np.argsort(np.argsort(preds)[::-1]) + 1).tolist()
+            pred_rank = '[' + ','.join([str(i) for i in pred_rank]) + ']'
+            f.write(' '.join([str(impr_index), pred_rank])+ '\n')
 
 
-    # f = zipfile.ZipFile(os.path.join(data_path, 'prediction-nrms-fit.zip'), 'w', zipfile.ZIP_DEFLATED)
-    # f.write(os.path.join(data_path, 'prediction.txt'), arcname='prediction.txt')
-    # f.close()
+    f = zipfile.ZipFile(os.path.join(data_path, f'nrms_rd_v6_{n}_user.zip'), 'w', zipfile.ZIP_DEFLATED)
+    f.write(os.path.join(data_path, 'prediction.txt'), arcname='prediction.txt')
+    f.close()
 
     with open(os.path.join(data_path, 'prediction_reldiff.txt'), 'w') as f:
         for impr_index, preds in tqdm(zip(group_impr_indexes, gp_reldiff)):
@@ -108,7 +108,7 @@ for n in [5]:
             f.write(' '.join([str(impr_index), pred_rank])+ '\n')
     
     if not n: n = "all"
-    f = zipfile.ZipFile(os.path.join(data_path, f'nrms_rd_v4.2_{n}.zip'), 'w', zipfile.ZIP_DEFLATED)
+    f = zipfile.ZipFile(os.path.join(data_path, f'nrms_rd_v6_{n}_cn.zip'), 'w', zipfile.ZIP_DEFLATED)
     f.write(os.path.join(data_path, 'prediction_reldiff.txt'), arcname='prediction.txt')
     f.close()
     print(f"######### Finished {n} user_history #########\n")

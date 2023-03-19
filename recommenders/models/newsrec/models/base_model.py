@@ -474,6 +474,7 @@ class BaseModel:
 
     def reldiff(self, user, user_history, candidate_news):
         rd = []
+        user = user / np.linalg.norm(user)
         for n in candidate_news:
             cn = n * user_history 
 
@@ -507,7 +508,7 @@ class BaseModel:
         # user_vecs = self.run_user(news_filename, behaviors_file)
         user_vecs, user_clicked_news = self.run_user_reldiff(news_filename, behaviors_file)
 
-        self.prm = self.pr_matrix(np.stack(list(user_vecs.values())))
+        # self.prm = self.pr_matrix(np.stack(list(user_vecs.values())))
 
         self.news_vecs = news_vecs
         self.user_vecs = user_vecs
@@ -535,7 +536,6 @@ class BaseModel:
             user_history = user_history[np.nonzero(user_history)]
             if n:
                 user_history = user_history[:min(n, len(user_history))]
-                ## user_history = user_history[len(user_history) - min(n, len(user_history)): ]
             if len(user_history) == 0: user_history = [0]
             # print(user_history)
             # print(type(user_history))
@@ -552,7 +552,7 @@ class BaseModel:
 
             # Calculate a dot product between the RelDiff embeddings and the normalised candidate_news==stack
             # try user_vecs_reldiff dot user_vecs[imr_index] - lot worse performance
-            # pred_reldiff = np.dot(user_vecs_reldiff, user_vecs[impr_index])
+            pred_reldiff_user = np.dot(user_vecs_reldiff, user_vecs[impr_index])
             pred_reldiff = [np.dot(news, user) for news, user in zip(news_stack, user_vecs_reldiff)]
 
             group_impr_indexes.append(impr_index)
@@ -576,8 +576,8 @@ class BaseModel:
                     f.write(json.dumps(dmp) + '\n')
                     dmp = (np.argsort(np.dot(news_stack, user_vecs[impr_index]))).tolist()[::-1]
                     f.write(json.dumps(dmp) + '\n')
-                if impr_index == test_impr[-1]:
-                    return None, None, None, None
+                # if impr_index == test_impr[-1]:
+                #     return None, None, None, None
 
-        group_preds = group_preds_reldiff
+        group_preds = group_preds_reldiff_user
         return group_impr_indexes, group_labels, group_preds, group_preds_reldiff
