@@ -76,6 +76,11 @@ class BaseModel:
 
         self.model.compile(loss=self.loss, optimizer=self.train_optimizer)
 
+
+
+        self.news_vecs = []
+        self.user_vecs = []
+
     def _init_embedding(self, file_path):
         """Load pre-trained embeddings as a constant tensor.
 
