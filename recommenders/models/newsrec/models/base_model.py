@@ -517,6 +517,7 @@ class BaseModel:
         group_labels = []
         group_preds = []
         group_preds_reldiff = []
+        group_preds_reldiff_user = []
 
         for (
                 impr_index,
@@ -560,6 +561,7 @@ class BaseModel:
             # group_preds.append(pred)
             # Modify to append and return the original predictions and also the RelDiff ones
             group_preds_reldiff.append(pred_reldiff)
+            group_preds_reldiff_user.append(pred_reldiff_user)
 
 
             test_impr = np.array([5, 7, 10, 11, 14]) - 1 # 5 - longer, swaps # 7 - short, no change # 10 - long, huge change # 11 - medium lot of swaps, # 14 - medium, one swap
