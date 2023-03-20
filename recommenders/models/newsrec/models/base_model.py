@@ -474,7 +474,7 @@ class BaseModel:
 
     def reldiff(self, user, user_history, candidate_news):
         rd = []
-        user = user / np.linalg.norm(user)
+        # user = user / np.linalg.norm(user)
         for n in candidate_news:
             cn = n * user_history 
 
@@ -568,7 +568,7 @@ class BaseModel:
             if impr_index in test_impr:
                 import os
                 import json
-                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_rd_embds-{n}uh-{impr_index + 1}.json"), 'w') as f:
+                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_rd_embds-{n}uh-{impr_index + 1}-classic.json"), 'w') as f:
                     f.write(json.dumps(user_history.tolist()) + '\n')
                     f.write(json.dumps(user_vecs[impr_index].tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
