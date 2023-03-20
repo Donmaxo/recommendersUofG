@@ -80,6 +80,7 @@ class BaseModel:
 
         self.news_vecs = []
         self.user_vecs = []
+        self.user_clicked_news = []
 
     def _init_embedding(self, file_path):
         """Load pre-trained embeddings as a constant tensor.
@@ -518,6 +519,7 @@ class BaseModel:
 
             self.news_vecs = news_vecs
             self.user_vecs = user_vecs
+            self.user_clicked_news = user_clicked_news
 
         group_impr_indexes = []
         group_labels = []
@@ -535,15 +537,15 @@ class BaseModel:
                 user_index,
                 label,
         ) in tqdm(self.test_iterator.load_impression_from_file(behaviors_file), desc="load_impression_from_file"):
-            news_stack = np.stack([news_vecs[i] for i in news_index], axis=0)
+            news_stack = np.stack([self.news_vecs[i] for i in news_index], axis=0)
 
             # pred = np.dot(
             #     news_stack,
             #     user_vecs[impr_index],
             # )
 
-            # Tegt only non zero news indexes
-            user_history = user_clicked_news[impr_index]
+            # Take only non zero news indexes
+            user_history = self.user_clicked_news[impr_index]
             user_history = user_history[np.nonzero(user_history)]
             if n:
                 user_history = user_history[:min(n, len(user_history))]
@@ -553,17 +555,17 @@ class BaseModel:
             # print(user_history.shape)           # (50, 30)
             # print(user_vecs[user_index].shape)  # (400, )
             # print(impr_index, user_index)       # 0 200461
-            user_history = np.stack([news_vecs[i] for i in list(user_history)])
+            user_history = np.stack([self.news_vecs[i] for i in list(user_history)])
 
 
             # Call the reldiff helper function to obtain the "stack" after the RelDiff has been applied
-            user_vecs_reldiff = self.reldiff(user_vecs[impr_index], user_history, news_stack)
+            user_vecs_reldiff = self.reldiff(self.user_vecs[impr_index], user_history, news_stack)
             user_vecs_reldiff_a_lot_more_information = np.array(user_vecs_reldiff)
             user_vecs_reldiff = np.mean(user_vecs_reldiff, axis=1)
 
             # Calculate a dot product between the RelDiff embeddings and the normalised candidate_news==stack
             # try user_vecs_reldiff dot user_vecs[imr_index] - lot worse performance
-            pred_reldiff_user = np.dot(user_vecs_reldiff, user_vecs[impr_index])
+            pred_reldiff_user = np.dot(user_vecs_reldiff, self.user_vecs[impr_index])
             pred_reldiff = [np.dot(news, user) for news, user in zip(news_stack, user_vecs_reldiff)]
 
             group_impr_indexes.append(impr_index)
@@ -580,13 +582,13 @@ class BaseModel:
                 import json
                 with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_rd_embds_extended-{n}uh-{impr_index + 1}.json"), 'w') as f:
                     f.write(json.dumps(user_history.tolist()) + '\n')
-                    f.write(json.dumps(user_vecs[impr_index].tolist()) + '\n')
+                    f.write(json.dumps(self.user_vecs[impr_index].tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
                     f.write(json.dumps(news_stack.tolist()) + '\n')
                     dmp = (np.argsort(pred_reldiff)).tolist()[::-1]
                     f.write(json.dumps(user_vecs_reldiff_a_lot_more_information.tolist()) + '\n')
                     f.write(json.dumps(dmp) + '\n')
-                    dmp = (np.argsort(np.dot(news_stack, user_vecs[impr_index]))).tolist()[::-1]
+                    dmp = (np.argsort(np.dot(news_stack, self.user_vecs[impr_index]))).tolist()[::-1]
                     f.write(json.dumps(dmp) + '\n')
                 # if impr_index == test_impr[-1]:
                 #     return None, None, None, None
