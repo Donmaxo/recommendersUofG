@@ -503,21 +503,26 @@ class BaseModel:
         print("update with f string")
         if update:
             self.test_iterator.update_datasets(news_filename, behaviors_file)
-        news_vecs = self.run_news(news_filename)
-        # Run the extended method that also saves embeddings of the user history
-        # user_vecs = self.run_user(news_filename, behaviors_file)
-        user_vecs, user_clicked_news = self.run_user_reldiff(news_filename, behaviors_file)
+        if update or not self.news_vecs or not self.user_vecs:
+            news_vecs = self.run_news(news_filename)
+            # Run the extended method that also saves embeddings of the user history
+            # user_vecs = self.run_user(news_filename, behaviors_file)
+            user_vecs, user_clicked_news = self.run_user_reldiff(news_filename, behaviors_file)
 
-        # self.prm = self.pr_matrix(np.stack(list(user_vecs.values())))
+            # self.prm = self.pr_matrix(np.stack(list(user_vecs.values())))
 
-        self.news_vecs = news_vecs
-        self.user_vecs = user_vecs
+            self.news_vecs = news_vecs
+            self.user_vecs = user_vecs
 
         group_impr_indexes = []
         group_labels = []
         group_preds = []
         group_preds_reldiff = []
         group_preds_reldiff_user = []
+
+        from time import perf_counter
+
+        start_time = perf_counter()
 
         for (
                 impr_index,
@@ -564,11 +569,11 @@ class BaseModel:
             group_preds_reldiff_user.append(pred_reldiff_user)
 
 
-            test_impr = np.array([5, 7, 10, 11, 14]) - 1 # 5 - longer, swaps # 7 - short, no change # 10 - long, huge change # 11 - medium lot of swaps, # 14 - medium, one swap
+            test_impr = np.array([5, 7, 10, 11, 14, 34, 567, 666, 911, 999, 3456, 7654, 12098]) - 1 # 5 - longer, swaps # 7 - short, no change # 10 - long, huge change # 11 - medium lot of swaps, # 14 - medium, one swap
             if impr_index in test_impr:
                 import os
                 import json
-                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_rd_embds-{n}uh-{impr_index + 1}-classic.json"), 'w') as f:
+                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_rd_embds_extended-{n}uh-{impr_index + 1}.json"), 'w') as f:
                     f.write(json.dumps(user_history.tolist()) + '\n')
                     f.write(json.dumps(user_vecs[impr_index].tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
@@ -580,6 +585,14 @@ class BaseModel:
                     f.write(json.dumps(dmp) + '\n')
                 # if impr_index == test_impr[-1]:
                 #     return None, None, None, None
+
+        end_time = perf_counter()
+
+        # log the time taken:
+        with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_time.txt"), "a") as f:
+            time_taken = (end_time - start_time) / 60
+            f.write(f"User History Size: {n}\t took {(time_taken)} \t minutes.")
+
 
         group_preds = group_preds_reldiff_user
         return group_impr_indexes, group_labels, group_preds, group_preds_reldiff
