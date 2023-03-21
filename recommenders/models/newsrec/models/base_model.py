@@ -598,7 +598,7 @@ class BaseModel:
         # log the time taken:
         with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_time.txt"), "a") as f:
             time_taken = (end_time - start_time) / 60
-            f.write(f"User History Size: {n}\t took {(time_taken)} \t minutes.")
+            f.write(f"User History Size: {n}\t took {(round(time_taken), 2)} \t minutes.\n")
 
 
         group_preds = group_preds_reldiff_user
