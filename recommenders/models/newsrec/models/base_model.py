@@ -484,18 +484,18 @@ class BaseModel:
         for n in candidate_news:
             cn = n * user_history 
 
-            # """ L2 norm of each vector """
-            # l2 = np.linalg.norm(cn, axis=1)
-            # l2 = np.where(l2 == 0, 1, l2)
-            # rd.append(user - (cn.T / l2).T)
+            """ L2 norm of each vector """
+            l2 = np.linalg.norm(cn, axis=1)
+            l2 = np.where(l2 == 0, 1, l2)
+            rd.append(user - (cn.T / l2).T)
 
             # """ L2 norm of each vector with Projection Matrix """
             # l2 = np.linalg.norm(cn, axis=1)
             # l2 = np.where(l2 == 0, 1, l2)
             # rd.append(user - (self.prm @ (cn.T / l2)).T) # comment not to use Projection Matrix
             
-            """ without any normalisation """
-            rd.append(user + cn)
+            # """ without any normalisation """
+            # rd.append(user + cn)
 
             # """ L2 norm of the whole matrix """
             # l2 = np.linalg.norm(cn)
@@ -580,7 +580,7 @@ class BaseModel:
             if impr_index in test_impr:
                 import os
                 import json
-                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_rd_embds_test7-{n}uh-{impr_index + 1}.json"), 'w') as f:
+                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_v7-{n}uh-{impr_index + 1}.json"), 'w') as f:
                     f.write(json.dumps(user_history.tolist()) + '\n')
                     f.write(json.dumps(self.user_vecs[impr_index].tolist()) + '\n')
                     f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
@@ -588,10 +588,15 @@ class BaseModel:
                     dmp = (np.argsort(pred_reldiff)).tolist()[::-1]
                     f.write(json.dumps(user_vecs_reldiff_a_lot_more_information.tolist()) + '\n')
                     f.write(json.dumps(dmp) + '\n')
-                    dmp = (np.argsort(np.dot(news_stack, self.user_vecs[impr_index]))).tolist()[::-1]
-                    f.write(json.dumps(dmp) + '\n')
+                    dmp2 = (np.argsort(np.dot(news_stack, self.user_vecs[impr_index]))).tolist()[::-1]
+                    f.write(json.dumps(dmp2) + '\n')
                 # if impr_index == test_impr[-1]:
                 #     return None, None, None, None
+                if impr_index == 10:
+                    print("rd: ", pred_reldiff[dmp])
+                    print("dot:", np.dot(news_stack, self.user_vecs[impr_index])[dmp2])
+                    return None
+
 
         end_time = perf_counter()
 
