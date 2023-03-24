@@ -593,8 +593,10 @@ class BaseModel:
                 # if impr_index == test_impr[-1]:
                 #     return None, None, None, None
                 if impr_index == 10:
-                    print("rd: ", pred_reldiff[dmp])
+                    print('\n\n\n')
+                    print("rd: ", np.array(pred_reldiff)[dmp])
                     print("dot:", np.dot(news_stack, self.user_vecs[impr_index])[dmp2])
+                    print('\n\n\n')
                     return None
 
 
