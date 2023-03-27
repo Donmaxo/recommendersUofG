@@ -113,9 +113,6 @@ class NRMSModel(BaseModel):
             [click_title_presents] * 3
         )
         user_present = AttLayer2(hparams.attention_hidden_dim, seed=self.seed)(y)
-        
-        print("userenc", his_input_title.shape, "CTP:", click_title_presents.shape, user_present.shape)
-        model = keras.Model(his_input_title, user_present, name="user_encoder")
         return model
 
     def _build_newsencoder(self, embedding_layer):

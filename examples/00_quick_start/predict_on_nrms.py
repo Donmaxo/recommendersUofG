@@ -46,7 +46,6 @@ if not os.path.exists(train_news_file):
     
 if not os.path.exists(test_news_file):
     download_deeprec_resources(mind_url, os.path.join(data_path, 'test'), 'MINDlarge_test.zip')
-# downloaded manualy because it froze twice. Lovely
     
 if not os.path.exists(valid_news_file):
     download_deeprec_resources(mind_url, \
@@ -82,12 +81,10 @@ model.model.load_weights(os.path.join(model_path, "nrms_ckpt"))
 
 
 
-
-# print(model.run_fast_eval(valid_news_file, valid_behaviors_file))
-# for n in [5, 10, 15, 20, 24, None]:
-for n in [24]:
+for n in [5, 10, 15, 20, 24, None]:
     group_impr_indexes, group_labels, group_preds, gp_reldiff = model.run_fast_eval(test_news_file, test_behaviors_file, update=False, n=n)
 
+    """include if you want to save the original predictions"""
     # with open(os.path.join(data_path, 'prediction.txt'), 'w') as f:
     #     for impr_index, preds in tqdm(zip(group_impr_indexes, group_preds)):
     #         impr_index += 1
@@ -100,6 +97,7 @@ for n in [24]:
     # f.write(os.path.join(data_path, 'prediction.txt'), arcname='prediction.txt')
     # f.close()
 
+    """saves the RelDiff predictions of size n"""
     with open(os.path.join(data_path, 'prediction_reldiff.txt'), 'w') as f:
         for impr_index, preds in tqdm(zip(group_impr_indexes, gp_reldiff)):
             impr_index += 1
@@ -108,10 +106,10 @@ for n in [24]:
             f.write(' '.join([str(impr_index), pred_rank])+ '\n')
     
     if not n: n = "all"
-    f = zipfile.ZipFile(os.path.join(data_path, f'nrms_rd_v7_{n}.zip'), 'w', zipfile.ZIP_DEFLATED)
+    f = zipfile.ZipFile(os.path.join(data_path, f'nrms-predictions-{n}.zip'), 'w', zipfile.ZIP_DEFLATED)
     f.write(os.path.join(data_path, 'prediction_reldiff.txt'), arcname='prediction.txt')
     f.close()
     print(f"######### Finished {n} user_history #########\n")
 
-print("finitto")
+print("all done")
 

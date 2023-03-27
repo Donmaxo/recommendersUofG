@@ -1,5 +1,7 @@
 # Recommenders
 
+Modified for resaerch purpouse to include the RelDiff on the NRMS basis
+
 [![Documentation Status](https://readthedocs.org/projects/microsoft-recommenders/badge/?version=latest)](https://microsoft-recommenders.readthedocs.io/en/latest/?badge=latest)
 
 ## What's New (July, 2022)
