@@ -352,35 +352,13 @@ class BaseModel:
 
         return user_index, user_vec
 
+    """Modified to return user_input == the user_history"""
     def user_reldiff(self, batch_user_input):
         user_input = self._get_user_feature_from_iter(batch_user_input)
         user_vec = self.userencoder.predict_on_batch(user_input)
         user_index = batch_user_input["impr_index_batch"]
 
-        # print(user_input.shape, user_vec.shape, user_index.shape)
-        # print(user_input)
-        # print(5 + "i")
-
-        # Get the user click history as array of news embeddings
-#         user_n_news_vec = {}
-#         for i, uc in enumerate(user_index):
-#             # Sanitise input by removing zero arrays (as users have not necessarily interacted with 50 news)
-#             a = user_input[i]
-#             a = a[~np.all(a == 0, axis=1)]  # remove zero arrays
-#             # Compatibility - add one zero vector back - the 'new user gets average news recommended solution'
-#             if a.size == 0:
-#                 a = np.array([np.zeros(user_input[i].shape[1])])
-
-#             # TODO make the max number of news_history (n) be able to change easily
-#             # Get the number of documents from user click history to return back, set limit to the number of amount of
-#             #  clicked in the user history (whichever is lower)
-#             n = min(24, a.shape[0])
-#             # Create the dictionary required for self.news() and run it
-# #             batch_user_news_input = {"news_index_batch": np.arange(0, n, 1),
-# #                                      "candidate_title_batch": a}
-# #             user_n_news_vec[uc] = self.news(batch_user_news_input)[1]
-#             # user_n_news_vec[uc] = np.float32(self.newsencoder.predict_on_batch(a[:n, :]))
-#             user_n_news_vec[uc] = user_input
+    
         return user_index, user_vec, user_input
 
     def news(self, batch_news_input):
@@ -407,11 +385,7 @@ class BaseModel:
             user_vecs.extend(user_vec)
             # Include the user news click history
             user_histories.extend(batch_data_input["user_history_batch"])
-            # print(batch_data_input)
-            # print(np.array(user_indexes).shape)                   # (32, )
-            # print(np.array(user_vecs).shape)                      # (32, 400)
-            # print(np.array(user_histories).shape)                 # (32, 50)
-            # print(crashed)
+
         print('user_indexes length:        ', np.array(user_indexes).shape)
         print('user_vecs length:           ', np.array(user_vecs).shape)
         print('user_n_news_vecs_all length:', np.array(user_histories).shape)
@@ -468,19 +442,15 @@ class BaseModel:
             
     def pr_matrix(self, m): # m = user_vec to numpy array (all of them) (50, 400)
         from scipy.linalg import orth
-        # print(m.shape)
-        # (10, 400)
-        # maybe np.dot instead of @ ???
         A = orth(m.T)
         # A = np.dot(U, U.T)
         Pr = A @ np.linalg.inv(A.T @ A) @ A.T
         print(Pr.shape, A.shape)
-        # (10, 10) (10,) (400, 400) (10, 10)
-        return Pr # (10, 10) - expected (10, 400) or (400, 10) (400, 400) --> dot product with cn
+        return Pr
 
+    """auxhilary RelDiff calculation with alterrnative variations"""
     def reldiff(self, user, user_history, candidate_news):
         rd = []
-        # user = user / np.linalg.norm(user)
         for n in candidate_news:
             cn = n * user_history 
 
@@ -512,9 +482,9 @@ class BaseModel:
         if update or not self.news_vecs or not self.user_vecs:
             news_vecs = self.run_news(news_filename)
             # Run the extended method that also saves embeddings of the user history
-            # user_vecs = self.run_user(news_filename, behaviors_file)
             user_vecs, user_clicked_news = self.run_user_reldiff(news_filename, behaviors_file)
 
+            # """uncomment when the PR matrix alternative mode is used in reldiff function"""
             # self.prm = self.pr_matrix(np.stack(list(user_vecs.values())))
 
             self.news_vecs = news_vecs
@@ -525,7 +495,6 @@ class BaseModel:
         group_labels = []
         group_preds = []
         group_preds_reldiff = []
-        group_preds_reldiff_user = []
 
         from time import perf_counter
 
@@ -539,22 +508,19 @@ class BaseModel:
         ) in tqdm(self.test_iterator.load_impression_from_file(behaviors_file), desc="load_impression_from_file"):
             news_stack = np.stack([self.news_vecs[i] for i in news_index], axis=0)
 
+            # """The original dot product calcualtion of scores"""
             # pred = np.dot(
             #     news_stack,
             #     user_vecs[impr_index],
             # )
+            # group_preds.append(pred)
 
-            # Take only non zero news indexes
+            # Sanitise user history - no 0s padding. Only take n needed
             user_history = self.user_clicked_news[impr_index]
             user_history = user_history[np.nonzero(user_history)]
             if n:
                 user_history = user_history[:min(n, len(user_history))]
             if len(user_history) == 0: user_history = [0]
-            # print(user_history)
-            # print(type(user_history))
-            # print(user_history.shape)           # (50, 30)
-            # print(user_vecs[user_index].shape)  # (400, )
-            # print(impr_index, user_index)       # 0 200461
             user_history = np.stack([self.news_vecs[i] for i in list(user_history)])
 
 
@@ -564,43 +530,36 @@ class BaseModel:
             user_vecs_reldiff = np.mean(user_vecs_reldiff, axis=1)
 
             # Calculate a dot product between the RelDiff embeddings and the normalised candidate_news==stack
-            # try user_vecs_reldiff dot user_vecs[imr_index] - lot worse performance
-            pred_reldiff_user = np.dot(user_vecs_reldiff, self.user_vecs[impr_index])
             pred_reldiff = [np.dot(news, user) for news, user in zip(news_stack, user_vecs_reldiff)]
 
             group_impr_indexes.append(impr_index)
             group_labels.append(label)
-            # group_preds.append(pred)
-            # Modify to append and return the original predictions and also the RelDiff ones
             group_preds_reldiff.append(pred_reldiff)
-            group_preds_reldiff_user.append(pred_reldiff_user)
 
-
-            test_impr = np.array([5, 7, 10, 11, 14, 34, 567, 666, 911]) - 1 # 5 - longer, swaps # 7 - short, no change # 10 - long, huge change # 11 - medium lot of swaps, # 14 - medium, one swap
-            if impr_index in test_impr:
-                import os
-                import json
-                with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_v7-{n}uh-{impr_index + 1}.json"), 'w') as f:
-                    f.write(json.dumps(user_history.tolist()) + '\n')
-                    f.write(json.dumps(self.user_vecs[impr_index].tolist()) + '\n')
-                    f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
-                    f.write(json.dumps(news_stack.tolist()) + '\n')
-                    dmp = (np.argsort(pred_reldiff)).tolist()[::-1]
-                    f.write(json.dumps(user_vecs_reldiff_a_lot_more_information.tolist()) + '\n')
-                    f.write(json.dumps(dmp) + '\n')
-                    dmp2 = (np.argsort(np.dot(news_stack, self.user_vecs[impr_index]))).tolist()[::-1]
-                    f.write(json.dumps(dmp2) + '\n')
+            # """Used for analysis - saves all user information in .json"""
+            # test_impr = np.array([5, 7, 10, 11, 14, 34, 567, 666, 911]) - 1 # 5 - longer, swaps # 7 - short, no change # 10 - long, huge change # 11 - medium lot of swaps, # 14 - medium, one swap
+            # if impr_index in test_impr:
+            #     import os
+            #     import json
+            #     with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_v7-{n}uh-{impr_index + 1}.json"), 'w') as f:
+            #         f.write(json.dumps(user_history.tolist()) + '\n')
+            #         f.write(json.dumps(self.user_vecs[impr_index].tolist()) + '\n')
+            #         f.write(json.dumps(user_vecs_reldiff.tolist()) + '\n')
+            #         f.write(json.dumps(news_stack.tolist()) + '\n')
+            #         dmp = (np.argsort(pred_reldiff)).tolist()[::-1]
+            #         f.write(json.dumps(user_vecs_reldiff_a_lot_more_information.tolist()) + '\n')
+            #         f.write(json.dumps(dmp) + '\n')
+            #         dmp2 = (np.argsort(np.dot(news_stack, self.user_vecs[impr_index]))).tolist()[::-1]
+            #         f.write(json.dumps(dmp2) + '\n')
                 # if impr_index == test_impr[-1]:
                 #     return None, None, None, None
 
 
         end_time = perf_counter()
 
-        # log the time taken:
-        # with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_time.txt"), "a") as f:
-        #     time_taken = (end_time - start_time) / 60
-        #     f.write(f"User History Size: {n}\t took {(round(time_taken), 2)} \t minutes.\n")
+        log the time taken:
+        with open(os.path.join(f"/scratch/2483099d/lvl4/recommendersUofG/examples/00_quick_start", f"nrms_time.txt"), "a") as f:
+            time_taken = (end_time - start_time) / 60
+            f.write(f"User History Size: {n}\t took {(round(time_taken), 2)} \t minutes.\n")
 
-
-        group_preds = group_preds_reldiff_user
         return group_impr_indexes, group_labels, group_preds, group_preds_reldiff
