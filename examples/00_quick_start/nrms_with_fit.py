@@ -1,3 +1,5 @@
+"""Selection from nrms_MIND.ipynb that allows only the training of the model"""
+
 import sys
 import os
 import numpy as np
@@ -86,34 +88,5 @@ os.makedirs(model_path, exist_ok=True)
 
 model.model.save_weights(os.path.join(model_path, "nrms_ckpt"))
 
-
-
-
-# print(model.run_fast_eval(valid_news_file, valid_behaviors_file))
-group_impr_indexes, group_labels, group_preds, gp_reldiff = model.run_fast_eval(test_news_file, test_behaviors_file, update=True)
-
-with open(os.path.join(data_path, 'prediction.txt'), 'w') as f:
-    for impr_index, preds in tqdm(zip(group_impr_indexes, group_preds)):
-        impr_index += 1
-        pred_rank = (np.argsort(np.argsort(preds)[::-1]) + 1).tolist()
-        pred_rank = '[' + ','.join([str(i) for i in pred_rank]) + ']'
-        f.write(' '.join([str(impr_index), pred_rank])+ '\n')
-
-
-f = zipfile.ZipFile(os.path.join(data_path, 'prediction-nrms-fit.zip'), 'w', zipfile.ZIP_DEFLATED)
-f.write(os.path.join(data_path, 'prediction.txt'), arcname='prediction.txt')
-f.close()
-
-with open(os.path.join(data_path, 'prediction.txt'), 'w') as f:
-    for impr_index, preds in tqdm(zip(group_impr_indexes, gp_reldiff)):
-        impr_index += 1
-        pred_rank = (np.argsort(np.argsort(preds)[::-1]) + 1).tolist()
-        pred_rank = '[' + ','.join([str(i) for i in pred_rank]) + ']'
-        f.write(' '.join([str(impr_index), pred_rank])+ '\n')
-
-f = zipfile.ZipFile(os.path.join(data_path, 'prediction_reldiff-nrms-fit.zip'), 'w', zipfile.ZIP_DEFLATED)
-f.write(os.path.join(data_path, 'prediction.txt'), arcname='prediction.txt')
-f.close()
-
-print("finitto")
+print("model trained and saved")
 
