@@ -474,7 +474,8 @@ class MINDIterator(BaseIterator):
                 self.uindexes[index],
                 impr_label,
             )
-            
+    
+    # added call for optional reinitialisation, needed to run when changing dataset 
     def update_datasets(self, news_file, behaviors_file):       
         self.init_news(news_file)
         self.init_behaviors(behaviors_file) 
