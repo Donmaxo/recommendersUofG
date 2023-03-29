@@ -1,5 +1,10 @@
 # Recommenders
 
+29th March 2023
+Adapted for research purpouses of RelDiff extension by Donmaxo according to licence.
+The modified files were all NRMS related in: examples/00_quick_start/
+And the recommenders/models/newsrec/ --> io/mind_iterator.py, --> models/base_model.py
+
 [![Documentation Status](https://readthedocs.org/projects/microsoft-recommenders/badge/?version=latest)](https://microsoft-recommenders.readthedocs.io/en/latest/?badge=latest)
 
 ## What's New (July, 2022)
